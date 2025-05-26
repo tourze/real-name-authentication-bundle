@@ -1,0 +1,213 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block title %}认证历史查询{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history"></i> 认证历史查询
+                    </h4>
+                    <p class="mb-0 mt-2">用户ID: <strong>{{ userId }}</strong></p>
+                </div>
+                <div class="card-body">
+                    {% if authentications|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>认证ID</th>
+                                        <th>认证方式</th>
+                                        <th>认证状态</th>
+                                        <th>提交时间</th>
+                                        <th>更新时间</th>
+                                        <th>过期时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for auth in authentications %}
+                                    <tr>
+                                        <td>
+                                            <small><code>{{ auth.id[:8] }}...</code></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-secondary">
+                                                {{ auth.method.label }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if auth.status.value == 'pending' %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-hourglass-half"></i> {{ auth.status.label }}
+                                                </span>
+                                            {% elseif auth.status.value == 'processing' %}
+                                                <span class="badge badge-info">
+                                                    <i class="fas fa-spinner fa-spin"></i> {{ auth.status.label }}
+                                                </span>
+                                            {% elseif auth.status.value == 'approved' %}
+                                                {% if auth.isExpired %}
+                                                    <span class="badge badge-dark">
+                                                        <i class="fas fa-clock"></i> 已过期
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check-circle"></i> {{ auth.status.label }}
+                                                    </span>
+                                                {% endif %}
+                                            {% elseif auth.status.value == 'rejected' %}
+                                                <span class="badge badge-danger">
+                                                    <i class="fas fa-times-circle"></i> {{ auth.status.label }}
+                                                </span>
+                                            {% elseif auth.status.value == 'expired' %}
+                                                <span class="badge badge-dark">
+                                                    <i class="fas fa-clock"></i> {{ auth.status.label }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ auth.createTime|date('Y-m-d H:i:s') }}</small>
+                                        </td>
+                                        <td>
+                                            <small>{{ auth.updateTime|date('Y-m-d H:i:s') }}</small>
+                                        </td>
+                                        <td>
+                                            {% if auth.expireTime %}
+                                                <small>{{ auth.expireTime|date('Y-m-d H:i:s') }}</small>
+                                            {% else %}
+                                                <small class="text-muted">-</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('auth_personal_status', {authId: auth.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> 查看
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 统计信息 -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-primary">{{ authentications|length }}</h5>
+                                        <p class="card-text">总计认证次数</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-success">
+                                            {% set approved_count = 0 %}
+                                            {% for auth in authentications %}
+                                                {% if auth.status.value == 'approved' and not auth.isExpired %}
+                                                    {% set approved_count = approved_count + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ approved_count }}
+                                        </h5>
+                                        <p class="card-text">有效认证</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-warning">
+                                            {% set pending_count = 0 %}
+                                            {% for auth in authentications %}
+                                                {% if auth.status.value in ['pending', 'processing'] %}
+                                                    {% set pending_count = pending_count + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ pending_count }}
+                                        </h5>
+                                        <p class="card-text">处理中</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-danger">
+                                            {% set rejected_count = 0 %}
+                                            {% for auth in authentications %}
+                                                {% if auth.status.value == 'rejected' %}
+                                                    {% set rejected_count = rejected_count + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ rejected_count }}
+                                        </h5>
+                                        <p class="card-text">已拒绝</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">暂无认证记录</h5>
+                            <p class="text-muted">该用户还没有提交过任何认证申请</p>
+                            <a href="{{ path('auth_personal_index') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> 开始认证
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <!-- 操作按钮 -->
+                    <div class="text-center mt-4">
+                        <a href="{{ path('auth_personal_index') }}" class="btn btn-primary mr-3">
+                            <i class="fas fa-home"></i> 返回首页
+                        </a>
+                        
+                        {% if authentications|length > 0 %}
+                            <!-- 检查是否有有效认证 -->
+                            {% set has_valid_auth = false %}
+                            {% for auth in authentications %}
+                                {% if auth.status.value == 'approved' and not auth.isExpired %}
+                                    {% set has_valid_auth = true %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if not has_valid_auth %}
+                                <a href="{{ path('auth_personal_index') }}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> 新建认证
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-info" onclick="window.location.reload()">
+                            <i class="fas fa-sync"></i> 刷新页面
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帮助提示 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> 温馨提示</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="fas fa-check text-success"></i> 每个用户在同一时间只能有一个有效的认证记录</li>
+                        <li><i class="fas fa-check text-success"></i> 认证通过后有效期为1年，过期后需要重新认证</li>
+                        <li><i class="fas fa-check text-success"></i> 如果认证失败，请检查信息是否正确后重新提交</li>
+                        <li><i class="fas fa-check text-success"></i> 认证状态会实时更新，您可以随时查看最新状态</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

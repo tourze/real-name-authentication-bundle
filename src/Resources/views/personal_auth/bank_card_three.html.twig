@@ -1,0 +1,221 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block title %}银行卡三要素认证{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card"></i> 银行卡三要素认证
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>银行卡三要素认证</strong><br>
+                        需要提供您的真实姓名、身份证号码和银行卡号进行验证。请确保银行卡为本人实名制卡片。
+                    </div>
+
+                    <form method="post" id="authForm" novalidate>
+                        <div class="form-group">
+                            <label for="userId" class="font-weight-bold">
+                                <i class="fas fa-user"></i> 用户ID <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="userId" 
+                                   name="userId" 
+                                   required
+                                   placeholder="请输入您的用户ID">
+                            <div class="invalid-feedback">
+                                请输入用户ID
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name" class="font-weight-bold">
+                                <i class="fas fa-user-tag"></i> 真实姓名 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   required
+                                   pattern="^[\u4e00-\u9fa5]{2,8}$"
+                                   placeholder="请输入您的真实姓名">
+                            <div class="invalid-feedback">
+                                请输入2-8位中文姓名
+                            </div>
+                            <small class="form-text text-muted">
+                                请输入与身份证上一致的姓名
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idCard" class="font-weight-bold">
+                                <i class="fas fa-id-card-alt"></i> 身份证号码 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="idCard" 
+                                   name="idCard" 
+                                   required
+                                   pattern="^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$"
+                                   placeholder="请输入18位身份证号码"
+                                   maxlength="18">
+                            <div class="invalid-feedback">
+                                请输入正确的18位身份证号码
+                            </div>
+                            <small class="form-text text-muted">
+                                支持15位和18位身份证号码，最后一位X请输入大写
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankCard" class="font-weight-bold">
+                                <i class="fas fa-credit-card"></i> 银行卡号 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="bankCard" 
+                                   name="bankCard" 
+                                   required
+                                   pattern="^[0-9]{15,19}$"
+                                   placeholder="请输入银行卡号"
+                                   maxlength="19">
+                            <div class="invalid-feedback">
+                                请输入正确的银行卡号（15-19位数字）
+                            </div>
+                            <small class="form-text text-muted">
+                                请输入本人实名制银行卡号，支持储蓄卡和信用卡
+                            </small>
+                        </div>
+
+                        <div class="form-group form-check">
+                            <input type="checkbox" 
+                                   class="form-check-input" 
+                                   id="agreement" 
+                                   required>
+                            <label class="form-check-label" for="agreement">
+                                我已阅读并同意 <a href="#" target="_blank">《实名认证服务协议》</a> 和 <a href="#" target="_blank">《隐私政策》</a>
+                            </label>
+                            <div class="invalid-feedback">
+                                请同意服务协议和隐私政策
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-warning btn-lg mr-3">
+                                <i class="fas fa-check"></i> 提交认证
+                            </button>
+                            <a href="{{ path('auth_personal_index') }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> 返回
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 认证说明 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> 认证说明</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> 认证时间：通常在1-3分钟内完成</li>
+                        <li><i class="fas fa-check text-success"></i> 安全保障：所有信息均采用加密传输和存储</li>
+                        <li><i class="fas fa-check text-success"></i> 隐私保护：严格遵守相关法律法规，保护用户隐私</li>
+                        <li><i class="fas fa-check text-success"></i> 有效期：认证通过后有效期为1年</li>
+                        <li><i class="fas fa-check text-success"></i> 银行支持：支持国内主要银行的储蓄卡和信用卡</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 支持银行列表 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-university"></i> 支持的银行</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success"></i> 中国工商银行</li>
+                                <li><i class="fas fa-check text-success"></i> 中国建设银行</li>
+                                <li><i class="fas fa-check text-success"></i> 中国农业银行</li>
+                                <li><i class="fas fa-check text-success"></i> 中国银行</li>
+                                <li><i class="fas fa-check text-success"></i> 交通银行</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success"></i> 招商银行</li>
+                                <li><i class="fas fa-check text-success"></i> 中信银行</li>
+                                <li><i class="fas fa-check text-success"></i> 光大银行</li>
+                                <li><i class="fas fa-check text-success"></i> 民生银行</li>
+                                <li><i class="fas fa-check text-success"></i> 其他主要银行</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Bootstrap表单验证
+    const form = document.getElementById('authForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // 身份证号码格式化
+    const idCardInput = document.getElementById('idCard');
+    idCardInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // 姓名输入限制
+    const nameInput = document.getElementById('name');
+    nameInput.addEventListener('input', function() {
+        // 只允许中文字符
+        this.value = this.value.replace(/[^\u4e00-\u9fa5]/g, '');
+    });
+
+    // 银行卡号输入限制和格式化
+    const bankCardInput = document.getElementById('bankCard');
+    bankCardInput.addEventListener('input', function() {
+        // 只允许数字
+        let value = this.value.replace(/[^\d]/g, '');
+        
+        // 格式化显示（每4位加一个空格）
+        let formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        
+        // 更新显示值
+        this.value = formatted;
+        
+        // 设置实际值（无空格）
+        this.setAttribute('data-value', value);
+    });
+
+    // 表单提交时使用无空格的银行卡号
+    form.addEventListener('submit', function() {
+        const realValue = bankCardInput.getAttribute('data-value') || bankCardInput.value.replace(/\s/g, '');
+        bankCardInput.value = realValue;
+    });
+})();
+</script>
+{% endblock %}

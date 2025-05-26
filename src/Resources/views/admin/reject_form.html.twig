@@ -1,0 +1,196 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block body_id 'ea-reject-authentication' %}
+{% block body_class 'ea-reject' %}
+
+{% block content_title %}
+    <i class="fas fa-times-circle text-danger"></i> 拒绝认证申请
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">认证信息</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>认证ID：</strong></td>
+                            <td><code>{{ authentication.id }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>用户ID：</strong></td>
+                            <td>{{ authentication.userId }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>认证类型：</strong></td>
+                            <td>
+                                <span class="badge badge-primary">{{ authentication.type.label }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>认证方式：</strong></td>
+                            <td>
+                                <span class="badge badge-secondary">{{ authentication.method.label }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>当前状态：</strong></td>
+                            <td>
+                                <span class="badge badge-warning">{{ authentication.status.label }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>提交时间：</strong></td>
+                            <td>{{ authentication.createTime|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                    </table>
+
+                    {% if authentication.submittedData %}
+                        <h6 class="mt-4">提交的认证数据：</h6>
+                        <div class="bg-light p-3 rounded">
+                            {% for key, value in authentication.submittedData %}
+                                {% if key != 'id_card' and key != 'bank_card' %}
+                                    <div><strong>{{ key }}:</strong> {{ value }}</div>
+                                {% else %}
+                                    <div><strong>{{ key }}:</strong> {{ value|slice(0, 4) }}****{{ value|slice(-4) }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-times-circle"></i> 拒绝认证
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="reason" class="font-weight-bold">
+                                拒绝原因 <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control" id="reason" name="reason" required>
+                                <option value="">请选择拒绝原因</option>
+                                <option value="信息不匹配">提交信息与官方记录不匹配</option>
+                                <option value="证件无效">身份证件无效或已过期</option>
+                                <option value="信息不清晰">提交的信息不清晰或不完整</option>
+                                <option value="重复提交">重复提交认证申请</option>
+                                <option value="疑似虚假">疑似提交虚假信息</option>
+                                <option value="技术问题">系统技术问题导致认证失败</option>
+                                <option value="其他">其他原因</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="custom_reason">自定义原因</label>
+                            <textarea class="form-control" 
+                                      id="custom_reason" 
+                                      name="custom_reason" 
+                                      rows="3" 
+                                      placeholder="如果选择了'其他原因'，请在此详细说明"></textarea>
+                            <small class="form-text text-muted">
+                                此内容将显示给用户，请使用友好的语言
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="review_note">内部备注</label>
+                            <textarea class="form-control" 
+                                      id="review_note" 
+                                      name="review_note" 
+                                      rows="2" 
+                                      placeholder="内部审核备注（用户不可见）"></textarea>
+                            <small class="form-text text-muted">
+                                仅供内部记录，用户无法看到此内容
+                            </small>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-danger btn-lg mr-3">
+                                <i class="fas fa-times"></i> 确认拒绝
+                            </button>
+                            <a href="{{ back_url }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> 取消
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 操作提示 -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> 操作提示</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li><i class="fas fa-check text-success"></i> 拒绝后用户可以重新提交认证</li>
+                        <li><i class="fas fa-check text-success"></i> 拒绝原因将发送给用户</li>
+                        <li><i class="fas fa-check text-success"></i> 操作将被记录到审核日志</li>
+                        <li><i class="fas fa-check text-success"></i> 请确保拒绝原因准确明确</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reasonSelect = document.getElementById('reason');
+            const customReasonTextarea = document.getElementById('custom_reason');
+            
+            reasonSelect.addEventListener('change', function() {
+                if (this.value === '其他') {
+                    customReasonTextarea.required = true;
+                    customReasonTextarea.parentElement.style.display = 'block';
+                } else {
+                    customReasonTextarea.required = false;
+                    if (this.value !== '') {
+                        customReasonTextarea.parentElement.style.display = 'none';
+                    }
+                }
+            });
+
+            // 表单提交时合并拒绝原因
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const reason = reasonSelect.value;
+                const customReason = customReasonTextarea.value.trim();
+                
+                if (reason === '其他' && !customReason) {
+                    e.preventDefault();
+                    alert('请填写自定义拒绝原因');
+                    return;
+                }
+                
+                // 合并拒绝原因
+                let finalReason = reason;
+                if (reason === '其他' && customReason) {
+                    finalReason = customReason;
+                } else if (customReason) {
+                    finalReason = reason + '：' + customReason;
+                }
+                
+                // 创建隐藏字段传递最终的拒绝原因
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'reason';
+                hiddenInput.value = finalReason;
+                this.appendChild(hiddenInput);
+                
+                // 移除原来的reason字段以避免冲突
+                reasonSelect.name = 'reason_select';
+            });
+        });
+    </script>
+{% endblock %}

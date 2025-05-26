@@ -1,0 +1,131 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block title %}个人实名认证{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-check"></i> 个人实名认证
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        请选择您希望使用的认证方式。不同的认证方式需要提供不同的信息，请根据您的情况选择合适的认证方式。
+                    </div>
+
+                    <div class="row">
+                        {% for method in methods %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-secondary h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        {% if method.value == 'id_card_two_elements' %}
+                                            <i class="fas fa-id-card text-primary"></i>
+                                        {% elseif method.value == 'carrier_three_elements' %}
+                                            <i class="fas fa-mobile-alt text-success"></i>
+                                        {% elseif method.value == 'bank_card_three_elements' or method.value == 'bank_card_four_elements' %}
+                                            <i class="fas fa-credit-card text-warning"></i>
+                                        {% elseif method.value == 'liveness_detection' %}
+                                            <i class="fas fa-camera text-info"></i>
+                                        {% endif %}
+                                        {{ method.label }}
+                                    </h5>
+                                    
+                                    <p class="card-text">
+                                        <small class="text-muted">需要提供：</small><br>
+                                        {% for field in method.requiredFields %}
+                                            <span class="badge badge-light">
+                                                {% if field == 'name' %}
+                                                    姓名
+                                                {% elseif field == 'id_card' %}
+                                                    身份证号
+                                                {% elseif field == 'mobile' %}
+                                                    手机号
+                                                {% elseif field == 'bank_card' %}
+                                                    银行卡号
+                                                {% elseif field == 'image' %}
+                                                    人脸照片
+                                                {% else %}
+                                                    {{ field }}
+                                                {% endif %}
+                                            </span>
+                                        {% endfor %}
+                                    </p>
+                                    
+                                    <div class="mt-auto">
+                                        {% if method.value == 'id_card_two_elements' %}
+                                            <a href="{{ path('auth_personal_id_card_two') }}" class="btn btn-primary btn-sm">
+                                                开始认证
+                                            </a>
+                                        {% elseif method.value == 'carrier_three_elements' %}
+                                            <a href="{{ path('auth_personal_carrier_three') }}" class="btn btn-success btn-sm">
+                                                开始认证
+                                            </a>
+                                        {% elseif method.value == 'bank_card_three_elements' %}
+                                            <a href="{{ path('auth_personal_bank_card_three') }}" class="btn btn-warning btn-sm">
+                                                开始认证
+                                            </a>
+                                        {% elseif method.value == 'bank_card_four_elements' %}
+                                            <a href="{{ path('auth_personal_bank_card_four') }}" class="btn btn-warning btn-sm">
+                                                开始认证
+                                            </a>
+                                        {% elseif method.value == 'liveness_detection' %}
+                                            <a href="{{ path('auth_personal_liveness') }}" class="btn btn-info btn-sm">
+                                                开始认证
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-history text-secondary"></i> 查询认证历史</h5>
+                            <form method="get" action="{{ path('auth_personal_history') }}" class="mb-3">
+                                <div class="input-group">
+                                    <input type="text" name="userId" class="form-control" placeholder="请输入用户ID" required>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">查询历史</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-search text-secondary"></i> 查询认证状态</h5>
+                            <form method="get" action="#" class="mb-3" id="statusForm">
+                                <div class="input-group">
+                                    <input type="text" name="authId" class="form-control" placeholder="请输入认证ID" required>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">查询状态</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('statusForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const authId = this.authId.value.trim();
+    if (authId) {
+        window.location.href = "{{ path('auth_personal_status', {authId: 'PLACEHOLDER'}) }}".replace('PLACEHOLDER', authId);
+    }
+});
+</script>
+{% endblock %}

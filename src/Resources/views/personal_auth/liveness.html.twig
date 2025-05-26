@@ -1,0 +1,304 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block title %}活体检测认证{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-camera"></i> 活体检测认证
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>活体检测认证</strong><br>
+                        通过人脸识别技术进行身份验证，需要您配合完成拍照和动作指令。请确保光线充足，面部清晰可见。
+                    </div>
+
+                    <form method="post" id="authForm" enctype="multipart/form-data" novalidate>
+                        <div class="form-group">
+                            <label for="userId" class="font-weight-bold">
+                                <i class="fas fa-user"></i> 用户ID <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="userId" 
+                                   name="userId" 
+                                   required
+                                   placeholder="请输入您的用户ID">
+                            <div class="invalid-feedback">
+                                请输入用户ID
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name" class="font-weight-bold">
+                                <i class="fas fa-user-tag"></i> 真实姓名 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   required
+                                   pattern="^[\u4e00-\u9fa5]{2,8}$"
+                                   placeholder="请输入您的真实姓名">
+                            <div class="invalid-feedback">
+                                请输入2-8位中文姓名
+                            </div>
+                            <small class="form-text text-muted">
+                                请输入与身份证上一致的姓名
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idCard" class="font-weight-bold">
+                                <i class="fas fa-id-card-alt"></i> 身份证号码 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="idCard" 
+                                   name="idCard" 
+                                   required
+                                   pattern="^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$"
+                                   placeholder="请输入18位身份证号码"
+                                   maxlength="18">
+                            <div class="invalid-feedback">
+                                请输入正确的18位身份证号码
+                            </div>
+                            <small class="form-text text-muted">
+                                支持15位和18位身份证号码，最后一位X请输入大写
+                            </small>
+                        </div>
+
+                        <!-- 人脸拍照区域 -->
+                        <div class="form-group">
+                            <label class="font-weight-bold">
+                                <i class="fas fa-camera"></i> 人脸拍照 <span class="text-danger">*</span>
+                            </label>
+                            
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div id="cameraContainer" style="display: none;">
+                                        <video id="video" width="400" height="300" autoplay style="border: 2px solid #ddd; border-radius: 8px;"></video>
+                                        <br><br>
+                                        <button type="button" id="captureBtn" class="btn btn-info">
+                                            <i class="fas fa-camera"></i> 拍照
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="photoPreview" style="display: none;">
+                                        <img id="capturedImage" width="400" height="300" style="border: 2px solid #ddd; border-radius: 8px;">
+                                        <br><br>
+                                        <button type="button" id="retakeBtn" class="btn btn-warning">
+                                            <i class="fas fa-redo"></i> 重新拍照
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="uploadArea">
+                                        <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                                        <h5>人脸拍照</h5>
+                                        <p class="text-muted">点击下方按钮开始拍照，或上传现有照片</p>
+                                        <button type="button" id="startCameraBtn" class="btn btn-primary mr-2">
+                                            <i class="fas fa-video"></i> 开启摄像头
+                                        </button>
+                                        <label for="imageUpload" class="btn btn-secondary">
+                                            <i class="fas fa-upload"></i> 上传照片
+                                        </label>
+                                        <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <small class="form-text text-muted">
+                                请确保光线充足，面部清晰可见，不要佩戴帽子、墨镜等遮挡物
+                            </small>
+                        </div>
+
+                        <div class="form-group form-check">
+                            <input type="checkbox" 
+                                   class="form-check-input" 
+                                   id="agreement" 
+                                   required>
+                            <label class="form-check-label" for="agreement">
+                                我已阅读并同意 <a href="#" target="_blank">《实名认证服务协议》</a> 和 <a href="#" target="_blank">《隐私政策》</a>
+                            </label>
+                            <div class="invalid-feedback">
+                                请同意服务协议和隐私政策
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-info btn-lg mr-3" id="submitBtn" disabled>
+                                <i class="fas fa-check"></i> 提交认证
+                            </button>
+                            <a href="{{ path('auth_personal_index') }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> 返回
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 认证说明 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> 认证说明</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> 认证时间：通常在1-3分钟内完成</li>
+                        <li><i class="fas fa-check text-success"></i> 安全保障：采用先进的人脸识别技术</li>
+                        <li><i class="fas fa-check text-success"></i> 隐私保护：照片仅用于身份验证，不会保存</li>
+                        <li><i class="fas fa-check text-success"></i> 有效期：认证通过后有效期为1年</li>
+                        <li><i class="fas fa-check text-success"></i> 准确率：人脸识别准确率达99.9%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 拍照要求 -->
+            <div class="card mt-4">
+                <div class="card-header bg-info">
+                    <h6 class="mb-0 text-white"><i class="fas fa-lightbulb"></i> 拍照要求</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success"><i class="fas fa-check"></i> 正确示例</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success"></i> 光线充足，面部清晰</li>
+                                <li><i class="fas fa-check text-success"></i> 正面拍摄，眼睛直视镜头</li>
+                                <li><i class="fas fa-check text-success"></i> 表情自然，嘴巴闭合</li>
+                                <li><i class="fas fa-check text-success"></i> 头发不遮挡面部</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger"><i class="fas fa-times"></i> 错误示例</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-times text-danger"></i> 佩戴帽子、墨镜、口罩</li>
+                                <li><i class="fas fa-times text-danger"></i> 侧面拍摄或角度倾斜</li>
+                                <li><i class="fas fa-times text-danger"></i> 光线昏暗或过度曝光</li>
+                                <li><i class="fas fa-times text-danger"></i> 多人合照或背景复杂</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    let video = document.getElementById('video');
+    let canvas = document.createElement('canvas');
+    let capturedImage = document.getElementById('capturedImage');
+    let stream = null;
+    let hasImage = false;
+
+    // Bootstrap表单验证
+    const form = document.getElementById('authForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity() || !hasImage) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!hasImage) {
+                alert('请先拍照或上传照片');
+            }
+        }
+        form.classList.add('was-validated');
+    });
+
+    // 身份证号码格式化
+    const idCardInput = document.getElementById('idCard');
+    idCardInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // 姓名输入限制
+    const nameInput = document.getElementById('name');
+    nameInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^\u4e00-\u9fa5]/g, '');
+    });
+
+    // 开启摄像头
+    document.getElementById('startCameraBtn').addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('cameraContainer').style.display = 'block';
+        } catch (err) {
+            alert('无法访问摄像头，请检查权限设置或使用上传功能');
+        }
+    });
+
+    // 拍照
+    document.getElementById('captureBtn').addEventListener('click', function() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        const imageData = canvas.toDataURL('image/jpeg');
+        capturedImage.src = imageData;
+        
+        // 停止摄像头
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        
+        document.getElementById('cameraContainer').style.display = 'none';
+        document.getElementById('photoPreview').style.display = 'block';
+        
+        hasImage = true;
+        document.getElementById('submitBtn').disabled = false;
+        
+        // 将图片数据添加到表单
+        const imageInput = document.createElement('input');
+        imageInput.type = 'hidden';
+        imageInput.name = 'capturedImage';
+        imageInput.value = imageData;
+        form.appendChild(imageInput);
+    });
+
+    // 重新拍照
+    document.getElementById('retakeBtn').addEventListener('click', function() {
+        document.getElementById('photoPreview').style.display = 'none';
+        document.getElementById('uploadArea').style.display = 'block';
+        
+        hasImage = false;
+        document.getElementById('submitBtn').disabled = true;
+        
+        // 移除之前的图片数据
+        const existingInput = form.querySelector('input[name="capturedImage"]');
+        if (existingInput) {
+            existingInput.remove();
+        }
+    });
+
+    // 文件上传
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                capturedImage.src = e.target.result;
+                document.getElementById('uploadArea').style.display = 'none';
+                document.getElementById('photoPreview').style.display = 'block';
+                
+                hasImage = true;
+                document.getElementById('submitBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+})();
+</script>
+{% endblock %} 

@@ -1,0 +1,236 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block title %}认证状态查询{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search"></i> 认证状态查询
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 认证基本信息 -->
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle"></i> 基本信息</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>认证ID：</strong></td>
+                                    <td><code>{{ authentication.id }}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>用户ID：</strong></td>
+                                    <td>{{ authentication.userId }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>认证类型：</strong></td>
+                                    <td>
+                                        <span class="badge badge-primary">
+                                            {{ authentication.type.label }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>认证方式：</strong></td>
+                                    <td>
+                                        <span class="badge badge-secondary">
+                                            {{ authentication.method.label }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- 认证状态 -->
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-clock"></i> 状态信息</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>当前状态：</strong></td>
+                                    <td>
+                                        {% if authentication.status.value == 'pending' %}
+                                            <span class="badge badge-warning badge-lg">
+                                                <i class="fas fa-hourglass-half"></i> {{ authentication.status.label }}
+                                            </span>
+                                        {% elseif authentication.status.value == 'processing' %}
+                                            <span class="badge badge-info badge-lg">
+                                                <i class="fas fa-spinner fa-spin"></i> {{ authentication.status.label }}
+                                            </span>
+                                        {% elseif authentication.status.value == 'approved' %}
+                                            <span class="badge badge-success badge-lg">
+                                                <i class="fas fa-check-circle"></i> {{ authentication.status.label }}
+                                            </span>
+                                        {% elseif authentication.status.value == 'rejected' %}
+                                            <span class="badge badge-danger badge-lg">
+                                                <i class="fas fa-times-circle"></i> {{ authentication.status.label }}
+                                            </span>
+                                        {% elseif authentication.status.value == 'expired' %}
+                                            <span class="badge badge-dark badge-lg">
+                                                <i class="fas fa-clock"></i> {{ authentication.status.label }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>提交时间：</strong></td>
+                                    <td>{{ authentication.createTime|date('Y-m-d H:i:s') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>更新时间：</strong></td>
+                                    <td>{{ authentication.updateTime|date('Y-m-d H:i:s') }}</td>
+                                </tr>
+                                {% if authentication.expireTime %}
+                                <tr>
+                                    <td><strong>过期时间：</strong></td>
+                                    <td>
+                                        {{ authentication.expireTime|date('Y-m-d H:i:s') }}
+                                        {% if authentication.isExpired %}
+                                            <span class="badge badge-warning">已过期</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- 认证结果详情 -->
+                    {% if authentication.status.value == 'approved' %}
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> 认证成功</h5>
+                            <p class="mb-0">恭喜！您的实名认证已通过审核。认证信息将用于身份验证和安全保障。</p>
+                        </div>
+                    {% elseif authentication.status.value == 'rejected' %}
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-times-circle"></i> 认证失败</h5>
+                            {% if authentication.reason %}
+                                <p><strong>失败原因：</strong>{{ authentication.reason }}</p>
+                            {% endif %}
+                            <p class="mb-0">请检查您提交的信息是否正确，或联系客服获取帮助。</p>
+                        </div>
+                    {% elseif authentication.status.value == 'processing' %}
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-spinner fa-spin"></i> 正在处理</h5>
+                            <p class="mb-0">您的认证申请正在处理中，通常需要1-3分钟，请耐心等待。</p>
+                        </div>
+                    {% elseif authentication.status.value == 'pending' %}
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-hourglass-half"></i> 等待审核</h5>
+                            <p class="mb-0">您的认证申请已提交，正在排队等待处理。</p>
+                        </div>
+                    {% elseif authentication.status.value == 'expired' %}
+                        <div class="alert alert-dark">
+                            <h5><i class="fas fa-clock"></i> 认证已过期</h5>
+                            <p class="mb-0">您的认证已过期，请重新提交认证申请。</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- 验证结果详情 -->
+                    {% if authentication.verificationResult %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> 验证详情</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if authentication.verificationResult.confidence is defined %}
+                                    <div class="mb-3">
+                                        <label>置信度：</label>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (authentication.verificationResult.confidence * 100)|round(1) }}%">
+                                                {{ (authentication.verificationResult.confidence * 100)|round(1) }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- 操作按钮 -->
+                    <div class="text-center mt-4">
+                        <a href="{{ path('auth_personal_index') }}" class="btn btn-primary mr-3">
+                            <i class="fas fa-home"></i> 返回首页
+                        </a>
+                        
+                        {% if authentication.status.value in ['rejected', 'expired'] %}
+                            <a href="{{ path('auth_personal_index') }}" class="btn btn-success">
+                                <i class="fas fa-redo"></i> 重新认证
+                            </a>
+                        {% elseif authentication.status.value in ['pending', 'processing'] %}
+                            <button type="button" class="btn btn-info" onclick="window.location.reload()">
+                                <i class="fas fa-sync"></i> 刷新状态
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帮助信息 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-question-circle"></i> 常见问题</h6>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="card">
+                            <div class="card-header" id="faq1">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faqCollapse1">
+                                    认证需要多长时间？
+                                </button>
+                            </div>
+                            <div id="faqCollapse1" class="collapse" data-parent="#faqAccordion">
+                                <div class="card-body">
+                                    通常认证会在1-3分钟内完成。如果超过5分钟还未完成，请联系客服。
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header" id="faq2">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faqCollapse2">
+                                    认证失败怎么办？
+                                </button>
+                            </div>
+                            <div id="faqCollapse2" class="collapse" data-parent="#faqAccordion">
+                                <div class="card-body">
+                                    请检查提交的信息是否正确，确保姓名和身份证号码与身份证上的信息完全一致。如果信息正确但仍然失败，请联系客服。
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header" id="faq3">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faqCollapse3">
+                                    认证信息安全吗？
+                                </button>
+                            </div>
+                            <div id="faqCollapse3" class="collapse" data-parent="#faqAccordion">
+                                <div class="card-body">
+                                    我们采用银行级别的加密技术保护您的个人信息，严格遵守相关法律法规，绝不会泄露您的隐私信息。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 自动刷新页面（如果状态为处理中）
+{% if authentication.status.value in ['pending', 'processing'] %}
+setTimeout(function() {
+    window.location.reload();
+}, 30000); // 30秒后自动刷新
+{% endif %}
+</script>
+{% endblock %} 
