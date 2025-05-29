@@ -16,11 +16,8 @@ class RealNameAuthenticationBundle extends Bundle implements BundleDependencyInt
             \Tourze\RoutingAutoLoaderBundle\RoutingAutoLoaderBundle::class => ['all' => true],
             \Tourze\DoctrineTimestampBundle\DoctrineTimestampBundle::class => ['all' => true],
             \Tourze\DoctrineUserBundle\DoctrineUserBundle::class => ['all' => true],
+            \Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class => ['all' => true],
+            \Tourze\DoctrineTrackBundle\DoctrineTrackBundle::class => ['all' => true],
         ];
-    }
-
-    public function getPath(): string
-    {
-        return \dirname(__DIR__);
     }
 }

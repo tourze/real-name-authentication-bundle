@@ -3,6 +3,7 @@
 namespace Tourze\RealNameAuthenticationBundle\Dto;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 
@@ -11,8 +12,8 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  */
 class PersonalAuthDto
 {
-    #[Assert\NotBlank(message: '用户ID不能为空')]
-    public readonly string $userId;
+    #[Assert\NotNull(message: '用户不能为空')]
+    public readonly UserInterface $user;
 
     #[Assert\NotNull(message: '认证方式不能为空')]
     public readonly AuthenticationMethod $method;
@@ -38,7 +39,7 @@ class PersonalAuthDto
     public readonly ?UploadedFile $image;
 
     public function __construct(
-        string $userId,
+        UserInterface $user,
         AuthenticationMethod $method,
         ?string $name = null,
         ?string $idCard = null,
@@ -46,7 +47,7 @@ class PersonalAuthDto
         ?string $bankCard = null,
         ?UploadedFile $image = null
     ) {
-        $this->userId = $userId;
+        $this->user = $user;
         $this->method = $method;
         $this->name = $name;
         $this->idCard = $idCard;
@@ -61,7 +62,7 @@ class PersonalAuthDto
     public function toArray(): array
     {
         $data = [
-            'user_id' => $this->userId,
+            'user_identifier' => $this->user->getUserIdentifier(),
             'method' => $this->method->value,
         ];
 
@@ -83,4 +84,4 @@ class PersonalAuthDto
 
         return $data;
     }
-} 
+}

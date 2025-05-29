@@ -5,6 +5,7 @@ namespace Tourze\RealNameAuthenticationBundle\Repository;
 use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
@@ -25,13 +26,27 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
     }
 
     /**
-     * 根据用户ID查询认证记录
+     * 根据用户查询认证记录
      */
-    public function findByUserId(string $userId): array
+    public function findByUser(UserInterface $user): array
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.userId = :userId')
-            ->setParameter('userId', $userId)
+            ->andWhere('r.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('r.createTime', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * 根据用户标识符查询认证记录
+     */
+    public function findByUserIdentifier(string $userIdentifier): array
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.user', 'u')
+            ->andWhere('u.userIdentifier = :userIdentifier')
+            ->setParameter('userIdentifier', $userIdentifier)
             ->orderBy('r.createTime', 'DESC')
             ->getQuery()
             ->getResult();
@@ -51,14 +66,14 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
     }
 
     /**
-     * 根据用户ID和认证类型查询认证记录
+     * 根据用户和认证类型查询认证记录
      */
-    public function findByUserIdAndType(string $userId, AuthenticationType $type): ?RealNameAuthentication
+    public function findByUserAndType(UserInterface $user, AuthenticationType $type): ?RealNameAuthentication
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.userId = :userId')
+            ->andWhere('r.user = :user')
             ->andWhere('r.type = :type')
-            ->setParameter('userId', $userId)
+            ->setParameter('user', $user)
             ->setParameter('type', $type)
             ->orderBy('r.createTime', 'DESC')
             ->setMaxResults(1)
@@ -104,11 +119,11 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
     /**
      * 查询用户最新的认证记录
      */
-    public function findLatestByUserId(string $userId): ?RealNameAuthentication
+    public function findLatestByUser(UserInterface $user): ?RealNameAuthentication
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.userId = :userId')
-            ->setParameter('userId', $userId)
+            ->andWhere('r.user = :user')
+            ->setParameter('user', $user)
             ->orderBy('r.createTime', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -118,15 +133,15 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
     /**
      * 查询用户指定类型的有效认证记录
      */
-    public function findValidByUserIdAndType(string $userId, AuthenticationType $type): ?RealNameAuthentication
+    public function findValidByUserAndType(UserInterface $user, AuthenticationType $type): ?RealNameAuthentication
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.userId = :userId')
+            ->andWhere('r.user = :user')
             ->andWhere('r.type = :type')
             ->andWhere('r.status = :approved')
             ->andWhere('(r.expireTime IS NULL OR r.expireTime > :now)')
             ->andWhere('r.valid = true')
-            ->setParameter('userId', $userId)
+            ->setParameter('user', $user)
             ->setParameter('type', $type)
             ->setParameter('approved', AuthenticationStatus::APPROVED)
             ->setParameter('now', new \DateTimeImmutable())
@@ -154,9 +169,15 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
                ->setParameter('type', $criteria['type']);
         }
 
-        if (isset($criteria['userId'])) {
-            $qb->andWhere('r.userId = :userId')
-               ->setParameter('userId', $criteria['userId']);
+        if (isset($criteria['user'])) {
+            $qb->andWhere('r.user = :user')
+               ->setParameter('user', $criteria['user']);
+        }
+
+        if (isset($criteria['userIdentifier'])) {
+            $qb->join('r.user', 'u')
+               ->andWhere('u.userIdentifier = :userIdentifier')
+               ->setParameter('userIdentifier', $criteria['userIdentifier']);
         }
 
         if (isset($criteria['method'])) {

@@ -58,7 +58,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->setPageTitle('edit', '编辑实名认证记录')
             ->setHelp('index', '查看和管理所有实名认证记录，支持人工审核')
             ->setDefaultSort(['createTime' => 'DESC'])
-            ->setSearchFields(['id', 'userId', 'reason'])
+            ->setSearchFields(['id', 'user.userIdentifier', 'reason'])
             ->setPaginatorPageSize(30);
     }
 
@@ -68,8 +68,12 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->setMaxLength(9999)
             ->hideOnForm();
 
-        yield TextField::new('userId', '用户ID')
-            ->setMaxLength(20);
+        yield TextField::new('user', '用户')
+            ->setMaxLength(20)
+            ->formatValue(function ($value) {
+                return $value ? $value->getUserIdentifier() : 'Unknown';
+            })
+            ->hideOnForm();
 
         yield ChoiceField::new('type', '认证类型')
             ->setFormType(EnumType::class)
@@ -187,7 +191,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
         }
 
         return $filters
-            ->add(TextFilter::new('userId', '用户ID'))
+            ->add(TextFilter::new('user', '用户标识符'))
             ->add(ChoiceFilter::new('type', '认证类型')->setChoices($typeChoices))
             ->add(ChoiceFilter::new('method', '认证方式')->setChoices($methodChoices))
             ->add(ChoiceFilter::new('status', '认证状态')->setChoices($statusChoices))

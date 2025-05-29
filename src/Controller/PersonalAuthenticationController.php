@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
@@ -33,6 +34,12 @@ class PersonalAuthenticationController extends AbstractController
     public function submitPersonalAuth(Request $request): JsonResponse
     {
         try {
+            // 获取当前登录用户
+            $user = $this->getUser();
+            if (!$user instanceof UserInterface) {
+                return new JsonResponse(['error' => '用户未登录'], Response::HTTP_UNAUTHORIZED);
+            }
+
             $data = json_decode($request->getContent(), true);
             
             if (!$data) {
@@ -40,7 +47,7 @@ class PersonalAuthenticationController extends AbstractController
             }
 
             // 验证必须字段
-            if (!isset($data['userId'], $data['method'])) {
+            if (!isset($data['method'])) {
                 return new JsonResponse(['error' => '缺少必须的字段'], Response::HTTP_BAD_REQUEST);
             }
 
@@ -53,7 +60,7 @@ class PersonalAuthenticationController extends AbstractController
 
             // 创建DTO
             $dto = new PersonalAuthDto(
-                userId: $data['userId'],
+                user: $user,
                 method: $method,
                 name: $data['name'] ?? null,
                 idCard: $data['idCard'] ?? null,
@@ -101,11 +108,17 @@ class PersonalAuthenticationController extends AbstractController
     /**
      * 查询认证历史
      */
-    #[Route('/history/{userId}', name: 'history', methods: ['GET'])]
-    public function getAuthHistory(string $userId): JsonResponse
+    #[Route('/history', name: 'history', methods: ['GET'])]
+    public function getAuthHistory(): JsonResponse
     {
         try {
-            $authentications = $this->personalAuthService->getAuthenticationHistory($userId);
+            // 获取当前登录用户
+            $user = $this->getUser();
+            if (!$user instanceof UserInterface) {
+                return new JsonResponse(['error' => '用户未登录'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            $authentications = $this->personalAuthService->getAuthenticationHistory($user);
             
             $data = [];
             foreach ($authentications as $auth) {
@@ -132,7 +145,7 @@ class PersonalAuthenticationController extends AbstractController
 
         } catch (\Exception $e) {
             $this->logger->error('查询认证历史失败', [
-                'userId' => $userId,
+                'user_identifier' => $this->getUser()?->getUserIdentifier(),
                 'error' => $e->getMessage()
             ]);
 
@@ -149,11 +162,18 @@ class PersonalAuthenticationController extends AbstractController
         try {
             $authentication = $this->personalAuthService->checkAuthenticationStatus($authId);
 
+            // 检查认证记录是否属于当前用户
+            $currentUser = $this->getUser();
+            if (!$currentUser instanceof UserInterface || 
+                $authentication->getUser()->getUserIdentifier() !== $currentUser->getUserIdentifier()) {
+                return new JsonResponse(['error' => '无权限访问此认证记录'], Response::HTTP_FORBIDDEN);
+            }
+
             return new JsonResponse([
                 'success' => true,
                 'data' => [
                     'id' => $authentication->getId(),
-                    'userId' => $authentication->getUserId(),
+                    'userIdentifier' => $authentication->getUserIdentifier(),
                     'type' => $authentication->getType()->value,
                     'method' => $authentication->getMethod()->value,
                     'methodLabel' => $authentication->getMethod()->getLabel(),

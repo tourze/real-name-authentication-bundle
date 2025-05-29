@@ -6,11 +6,36 @@ use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
+
+/**
+ * Mock用户类，仅用于测试数据
+ */
+class MockUser implements UserInterface
+{
+    public function __construct(private readonly string $identifier)
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->identifier;
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+}
 
 /**
  * 实名认证记录数据填充
@@ -40,7 +65,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 1. 个人认证 - 已通过（身份证二要素）
         $personalApproved = new RealNameAuthentication();
-        $personalApproved->setUserId('user_001');
+        $personalApproved->setUser(new MockUser('user_001'));
         $personalApproved->setType(AuthenticationType::PERSONAL);
         $personalApproved->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $personalApproved->setSubmittedData([
@@ -68,7 +93,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 2. 个人认证 - 待审核（运营商三要素）
         $personalPending = new RealNameAuthentication();
-        $personalPending->setUserId('user_002');
+        $personalPending->setUser(new MockUser('user_002'));
         $personalPending->setType(AuthenticationType::PERSONAL);
         $personalPending->setMethod(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
         $personalPending->setSubmittedData([
@@ -82,7 +107,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 3. 个人认证 - 已拒绝（银行卡三要素）
         $personalRejected = new RealNameAuthentication();
-        $personalRejected->setUserId('user_003');
+        $personalRejected->setUser(new MockUser('user_003'));
         $personalRejected->setType(AuthenticationType::PERSONAL);
         $personalRejected->setMethod(AuthenticationMethod::BANK_CARD_THREE_ELEMENTS);
         $personalRejected->setSubmittedData([
@@ -110,7 +135,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 4. 个人认证 - 处理中（银行卡四要素）
         $personalProcessing = new RealNameAuthentication();
-        $personalProcessing->setUserId('user_004');
+        $personalProcessing->setUser(new MockUser('user_004'));
         $personalProcessing->setType(AuthenticationType::PERSONAL);
         $personalProcessing->setMethod(AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS);
         $personalProcessing->setSubmittedData([
@@ -124,7 +149,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 5. 个人认证 - 已过期
         $personalExpired = new RealNameAuthentication();
-        $personalExpired->setUserId('user_005');
+        $personalExpired->setUser(new MockUser('user_005'));
         $personalExpired->setType(AuthenticationType::PERSONAL);
         $personalExpired->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $personalExpired->setSubmittedData([
@@ -141,7 +166,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 6. 活体检测认证 - 已通过
         $livenessApproved = new RealNameAuthentication();
-        $livenessApproved->setUserId('user_006');
+        $livenessApproved->setUser(new MockUser('user_006'));
         $livenessApproved->setType(AuthenticationType::PERSONAL);
         $livenessApproved->setMethod(AuthenticationMethod::LIVENESS_DETECTION);
         $livenessApproved->setSubmittedData([
@@ -168,8 +193,9 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
         $manager->persist($livenessApproved);
 
         // 7. 多个用户的认证历史（同一用户多次认证）
+        $user007 = new MockUser('user_007');
         $userMultipleAuth1 = new RealNameAuthentication();
-        $userMultipleAuth1->setUserId('user_007');
+        $userMultipleAuth1->setUser($user007);
         $userMultipleAuth1->setType(AuthenticationType::PERSONAL);
         $userMultipleAuth1->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $userMultipleAuth1->setSubmittedData([
@@ -186,7 +212,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 同一用户的第二次认证（成功）
         $userMultipleAuth2 = new RealNameAuthentication();
-        $userMultipleAuth2->setUserId('user_007');
+        $userMultipleAuth2->setUser($user007);
         $userMultipleAuth2->setType(AuthenticationType::PERSONAL);
         $userMultipleAuth2->setMethod(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
         $userMultipleAuth2->setSubmittedData([
@@ -204,7 +230,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 8. 批量测试数据（模拟大量用户）
         for ($i = 1; $i <= 20; $i++) {
-            $testUserId = sprintf('test_user_%03d', $i);
+            $testUser = new MockUser(sprintf('test_user_%03d', $i));
             $methods = [
                 AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
                 AuthenticationMethod::CARRIER_THREE_ELEMENTS,
@@ -221,7 +247,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
             $selectedStatus = $statuses[array_rand($statuses)];
 
             $testAuth = new RealNameAuthentication();
-            $testAuth->setUserId($testUserId);
+            $testAuth->setUser($testUser);
             $testAuth->setType(AuthenticationType::PERSONAL);
             $testAuth->setMethod($selectedMethod);
             $testAuth->setSubmittedData([

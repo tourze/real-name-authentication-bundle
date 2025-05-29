@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
@@ -31,19 +32,20 @@ use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationReposit
     name: 'real_name_authentication',
     options: ['comment' => '实名认证记录表']
 )]
-#[ORM\Index(columns: ['user_id'], name: 'real_name_authentication_idx_user_id')]
-#[ORM\Index(columns: ['status'], name: 'real_name_authentication_idx_status')]
-#[ORM\Index(columns: ['type'], name: 'real_name_authentication_idx_type')]
-#[ORM\Index(columns: ['create_time'], name: 'real_name_authentication_idx_create_time')]
-#[UniqueEntity(fields: ['userId', 'type'], message: '用户已有该类型的认证记录')]
+#[ORM\Index(name: 'real_name_authentication_idx_user_id', columns: ['user_id'])]
+#[ORM\Index(name: 'real_name_authentication_idx_status', columns: ['status'])]
+#[ORM\Index(name: 'real_name_authentication_idx_type', columns: ['type'])]
+#[ORM\Index(name: 'real_name_authentication_idx_create_time', columns: ['create_time'])]
+#[UniqueEntity(fields: ['user', 'type'], message: '用户已有该类型的认证记录')]
 class RealNameAuthentication implements Stringable
 {
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
 
-    #[ORM\Column(type: Types::STRING, length: 50, options: ['comment' => '用户ID'])]
-    private string $userId;
+    #[ORM\ManyToOne(targetEntity: UserInterface::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    private UserInterface $user;
 
     #[ORM\Column(type: Types::STRING, enumType: AuthenticationType::class, options: ['comment' => '认证类型'])]
     private AuthenticationType $type;
@@ -68,14 +70,14 @@ class RealNameAuthentication implements Stringable
     private ?string $reason = null;
 
     #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['comment' => '创建时间'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
     private DateTimeImmutable $createTime;
 
     #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['comment' => '更新时间'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
     private DateTimeImmutable $updateTime;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '认证过期时间'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '认证过期时间'])]
     private ?DateTimeImmutable $expireTime = null;
 
     #[CreatedByColumn]
@@ -107,6 +109,7 @@ class RealNameAuthentication implements Stringable
 
     public function __toString(): string
     {
+        $userIdentifier = $this->user?->getUserIdentifier() ?? 'Unknown';
         return sprintf('%s-%s(%s)', $this->type->getLabel(), $this->method->getLabel(), $this->status->getLabel());
     }
 
@@ -115,14 +118,14 @@ class RealNameAuthentication implements Stringable
         return $this->id;
     }
 
-    public function getUserId(): string
+    public function getUser(): UserInterface
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(string $userId): void
+    public function setUser(UserInterface $user): void
     {
-        $this->userId = $userId;
+        $this->user = $user;
         $this->updateTime = new DateTimeImmutable();
     }
 
@@ -305,5 +308,13 @@ class RealNameAuthentication implements Stringable
     public function setUpdatedFromIp(?string $updatedFromIp): void
     {
         $this->updatedFromIp = $updatedFromIp;
+    }
+
+    /**
+     * 获取用户标识符，用于向后兼容
+     */
+    public function getUserIdentifier(): string
+    {
+        return $this->user->getUserIdentifier();
     }
 }

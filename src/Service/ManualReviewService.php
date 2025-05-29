@@ -242,7 +242,7 @@ class ManualReviewService
     ): void {
         $this->logger->info('人工审核操作', [
             'auth_id' => $authentication->getId(),
-            'user_id' => $authentication->getUserId(),
+            'user_identifier' => $authentication->getUserIdentifier(),
             'action' => $action,
             'reviewer' => $reviewer,
             'review_note' => $reviewNote,

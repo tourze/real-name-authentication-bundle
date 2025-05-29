@@ -5,6 +5,7 @@ namespace Tourze\RealNameAuthenticationBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
@@ -43,13 +44,13 @@ class PersonalAuthenticationService
         }
 
         // 检查频率限制
-        if (!$this->validationService->checkRateLimiting($dto->userId, $dto->method)) {
+        if (!$this->validationService->checkRateLimiting($dto->user->getUserIdentifier(), $dto->method)) {
             throw new \RuntimeException('认证请求过于频繁，请稍后再试');
         }
 
         // 检查是否已有有效认证
-        $existingAuth = $this->authRepository->findValidByUserIdAndType(
-            $dto->userId,
+        $existingAuth = $this->authRepository->findValidByUserAndType(
+            $dto->user,
             AuthenticationType::PERSONAL
         );
 
@@ -62,7 +63,7 @@ class PersonalAuthenticationService
 
         // 创建认证记录
         $authentication = new RealNameAuthentication();
-        $authentication->setUserId($dto->userId);
+        $authentication->setUser($dto->user);
         $authentication->setType(AuthenticationType::PERSONAL);
         $authentication->setMethod($dto->method);
         $authentication->setSubmittedData($sanitizedData);
@@ -76,7 +77,7 @@ class PersonalAuthenticationService
 
         $this->logger->info('个人认证提交成功', [
             'auth_id' => $authentication->getId(),
-            'user_id' => $dto->userId,
+            'user_identifier' => $dto->user->getUserIdentifier(),
             'method' => $dto->method->value,
         ]);
 
@@ -210,11 +211,11 @@ class PersonalAuthenticationService
     }
 
     /**
-     * 获取认证历史
+     * 查询认证历史
      */
-    public function getAuthenticationHistory(string $userId): array
+    public function getAuthenticationHistory(UserInterface $user): array
     {
-        return $this->authRepository->findByUserId($userId);
+        return $this->authRepository->findByUser($user);
     }
 
     /**
@@ -222,8 +223,8 @@ class PersonalAuthenticationService
      */
     public function checkAuthenticationStatus(string $authId): RealNameAuthentication
     {
-        $authentication = $this->entityManager->find(RealNameAuthentication::class, $authId);
-
+        $authentication = $this->authRepository->find($authId);
+        
         if (!$authentication) {
             throw new \InvalidArgumentException('认证记录不存在');
         }
@@ -232,58 +233,68 @@ class PersonalAuthenticationService
     }
 
     /**
-     * 处理认证（异步）
+     * 处理认证请求
      */
     private function processAuthentication(RealNameAuthentication $authentication, PersonalAuthDto $dto): void
     {
         try {
-            // 更新状态为处理中
-            $authentication->updateStatus(AuthenticationStatus::PROCESSING);
+            $authentication->setStatus(AuthenticationStatus::PROCESSING);
             $this->entityManager->flush();
 
             $result = match ($dto->method) {
-                AuthenticationMethod::ID_CARD_TWO_ELEMENTS =>
+                AuthenticationMethod::ID_CARD_TWO_ELEMENTS => 
                     $this->verifyIdCardTwoElements($dto->name, $dto->idCard),
-                AuthenticationMethod::CARRIER_THREE_ELEMENTS =>
+                AuthenticationMethod::CARRIER_THREE_ELEMENTS => 
                     $this->verifyCarrierThreeElements($dto->name, $dto->idCard, $dto->mobile),
-                AuthenticationMethod::BANK_CARD_THREE_ELEMENTS =>
+                AuthenticationMethod::BANK_CARD_THREE_ELEMENTS => 
                     $this->verifyBankCardThreeElements($dto->name, $dto->idCard, $dto->bankCard),
-                AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS =>
+                AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS => 
                     $this->verifyBankCardFourElements($dto->name, $dto->idCard, $dto->bankCard, $dto->mobile),
-                AuthenticationMethod::LIVENESS_DETECTION =>
+                AuthenticationMethod::LIVENESS_DETECTION => 
                     $this->performLivenessDetection($dto->image),
-                default => throw new \InvalidArgumentException('不支持的认证方式'),
             };
 
-            // 更新认证结果
-            $status = $result->isSuccess() ? AuthenticationStatus::APPROVED : AuthenticationStatus::REJECTED;
-            $authentication->updateStatus(
-                $status,
-                ['confidence' => $result->getConfidence()],
-                $result->getResponseData(),
-                $result->getErrorMessage()
-            );
-
-            // 如果认证成功，设置过期时间（一年）
+            // 更新认证状态
             if ($result->isSuccess()) {
+                $authentication->updateStatus(
+                    AuthenticationStatus::APPROVED,
+                    [
+                        'confidence' => $result->getConfidence(),
+                        'provider_name' => $result->getProvider()->getName(),
+                    ],
+                    $result->getResponseData()
+                );
+                
+                // 设置过期时间（1年后）
                 $authentication->setExpireTime(new \DateTimeImmutable('+1 year'));
+            } else {
+                $authentication->updateStatus(
+                    AuthenticationStatus::REJECTED,
+                    [
+                        'error_code' => $result->getErrorCode(),
+                        'provider_name' => $result->getProvider()->getName(),
+                    ],
+                    $result->getResponseData(),
+                    $result->getErrorMessage() ?? '认证失败'
+                );
             }
 
+            $this->entityManager->flush();
+
         } catch (\Exception $e) {
-            // 处理异常
             $authentication->updateStatus(
                 AuthenticationStatus::REJECTED,
                 null,
                 null,
-                '认证处理异常: ' . $e->getMessage()
+                '系统处理异常: ' . $e->getMessage()
             );
+            $this->entityManager->flush();
 
-            $this->logger->error('个人认证处理失败', [
+            $this->logger->error('认证处理异常', [
                 'auth_id' => $authentication->getId(),
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
-        } finally {
-            $this->entityManager->flush();
         }
     }
 }

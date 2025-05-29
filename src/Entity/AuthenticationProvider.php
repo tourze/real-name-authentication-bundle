@@ -27,8 +27,8 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderReposit
     name: 'authentication_provider',
     options: ['comment' => '认证提供商表']
 )]
-#[ORM\Index(columns: ['type'], name: 'authentication_provider_idx_type')]
-#[ORM\Index(columns: ['is_active'], name: 'authentication_provider_idx_is_active')]
+#[ORM\Index(name: 'authentication_provider_idx_type', columns: ['type'])]
+#[ORM\Index(name: 'authentication_provider_idx_active', columns: ['active'])]
 #[UniqueEntity(fields: ['code'], message: '提供商代码已存在')]
 class AuthenticationProvider implements Stringable
 {
@@ -56,17 +56,17 @@ class AuthenticationProvider implements Stringable
     private array $config = [];
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否启用', 'default' => true])]
-    private bool $isActive = true;
+    private bool $active = true;
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '优先级', 'default' => 0])]
     private int $priority = 0;
 
     #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['comment' => '创建时间'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
     private DateTimeImmutable $createTime;
 
     #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['comment' => '更新时间'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
     private DateTimeImmutable $updateTime;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
@@ -164,12 +164,12 @@ class AuthenticationProvider implements Stringable
 
     public function isActive(): bool
     {
-        return $this->isActive;
+        return $this->active;
     }
 
-    public function setActive(bool $isActive): void
+    public function setActive(bool $active): void
     {
-        $this->isActive = $isActive;
+        $this->active = $active;
         $this->updateTime = new DateTimeImmutable();
     }
 

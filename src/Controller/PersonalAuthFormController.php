@@ -130,20 +130,20 @@ class PersonalAuthFormController extends AbstractController
      * 认证历史页面
      */
     #[Route('/history', name: 'history')]
-    public function history(Request $request): Response
+    public function history(): Response
     {
-        $userId = $request->query->get('userId');
-        if (!$userId) {
-            $this->addFlash('danger', '请提供用户ID');
+        $user = $this->getUser();
+        if (!$user) {
+            $this->addFlash('danger', '请先登录');
             return $this->redirectToRoute('auth_personal_index');
         }
 
         try {
-            $authentications = $this->personalAuthService->getAuthenticationHistory($userId);
+            $authentications = $this->personalAuthService->getAuthenticationHistory($user);
             
             return $this->render('@RealNameAuthentication/personal_auth/history.html.twig', [
                 'authentications' => $authentications,
-                'userId' => $userId,
+                'user' => $user,
             ]);
         } catch (\Exception $e) {
             $this->addFlash('danger', '查询认证历史失败');

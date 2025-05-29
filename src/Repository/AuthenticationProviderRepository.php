@@ -29,7 +29,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
     public function findActiveProviders(): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.isActive = true')
+            ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.createTime', 'ASC')
@@ -43,7 +43,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
     public function findByMethod(AuthenticationMethod $method): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.isActive = true')
+            ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
             ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
             ->setParameter('method', '"' . $method->value . '"')
@@ -60,7 +60,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.type = :type')
-            ->andWhere('p.isActive = true')
+            ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
             ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
             ->setParameter('type', $type)
@@ -77,7 +77,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
     public function findByPriority(): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.isActive = true')
+            ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.createTime', 'ASC')
@@ -104,7 +104,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
     public function findBestProviderForMethod(AuthenticationMethod $method): ?AuthenticationProvider
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.isActive = true')
+            ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
             ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
             ->setParameter('method', '"' . $method->value . '"')
