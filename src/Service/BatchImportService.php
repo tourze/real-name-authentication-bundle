@@ -117,7 +117,7 @@ class BatchImportService
                 'created_records' => $totalRecords
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $batch->markAsFailed('文件解析失败: ' . $e->getMessage());
             $this->entityManager->flush();
 
@@ -165,7 +165,7 @@ class BatchImportService
                 'success_rate' => $batch->getSuccessRate()
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $batch->markAsFailed('批次处理失败: ' . $e->getMessage());
             $this->entityManager->flush();
 
@@ -225,7 +225,7 @@ class BatchImportService
                 'auth_id' => $authentication->getId()
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $record->markAsFailed('处理异常: ' . $e->getMessage());
             
             $this->logger->warning('导入记录处理失败', [

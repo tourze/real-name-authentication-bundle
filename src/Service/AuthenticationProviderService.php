@@ -87,7 +87,7 @@ class AuthenticationProviderService
 
             return $authResult;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $processingTime = intval((microtime(true) - $startTime) * 1000);
 
             $this->logger->error('认证验证失败', [

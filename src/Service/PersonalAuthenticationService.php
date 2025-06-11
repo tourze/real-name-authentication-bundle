@@ -281,7 +281,7 @@ class PersonalAuthenticationService
 
             $this->entityManager->flush();
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $authentication->updateStatus(
                 AuthenticationStatus::REJECTED,
                 null,

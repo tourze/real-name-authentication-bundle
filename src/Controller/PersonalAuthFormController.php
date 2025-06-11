@@ -120,7 +120,7 @@ class PersonalAuthFormController extends AbstractController
             return $this->render('@RealNameAuthentication/personal_auth/status.html.twig', [
                 'authentication' => $authentication,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->addFlash('danger', '认证记录不存在或查询失败');
             return $this->redirectToRoute('auth_personal_index');
         }
@@ -145,7 +145,7 @@ class PersonalAuthFormController extends AbstractController
                 'authentications' => $authentications,
                 'user' => $user,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->addFlash('danger', '查询认证历史失败');
             return $this->redirectToRoute('auth_personal_index');
         }
@@ -164,7 +164,7 @@ class PersonalAuthFormController extends AbstractController
             // 实际应用中，这里应该返回真实的认证ID
             return $this->redirectToRoute('auth_personal_index');
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->addFlash('danger', '认证提交失败: ' . $e->getMessage());
             return $this->redirectToRoute('auth_personal_index');
         }
