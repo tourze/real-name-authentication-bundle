@@ -95,7 +95,7 @@ class PersonalAuthenticationController extends AbstractController
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\RuntimeException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_TOO_MANY_REQUESTS);
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $this->logger->error('个人认证提交失败', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -143,7 +143,7 @@ class PersonalAuthenticationController extends AbstractController
                 'data' => $data
             ]);
 
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $this->logger->error('查询认证历史失败', [
                 'user_identifier' => $this->getUser()?->getUserIdentifier(),
                 'error' => $e->getMessage()
@@ -190,7 +190,7 @@ class PersonalAuthenticationController extends AbstractController
 
         } catch (\InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_NOT_FOUND);
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $this->logger->error('查询认证状态失败', [
                 'authId' => $authId,
                 'error' => $e->getMessage()

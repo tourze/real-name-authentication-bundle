@@ -214,7 +214,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             $this->manualReviewService->approveAuthentication($authentication->getId(), $reviewNote);
 
             $this->addFlash('success', sprintf('认证申请 %s 已通过审核', $authentication->getId()));
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $this->addFlash('danger', '审核失败: ' . $e->getMessage());
         }
 
@@ -250,7 +250,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             $this->manualReviewService->rejectAuthentication($authentication->getId(), $reason, $reviewNote);
 
             $this->addFlash('success', sprintf('认证申请 %s 已拒绝', $authentication->getId()));
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $this->addFlash('danger', '审核失败: ' . $e->getMessage());
         }
 
