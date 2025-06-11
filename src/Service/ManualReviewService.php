@@ -135,7 +135,7 @@ class ManualReviewService
                 } else {
                     $results[$authId] = $this->rejectAuthentication($authId, $reason, $reviewNote);
                 }
-            } catch  (\Throwable $e) {
+            } catch (\Throwable $e) {
                 $this->logger->error('批量审核失败', [
                     'auth_id' => $authId,
                     'action' => $action,
