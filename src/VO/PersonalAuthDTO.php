@@ -1,6 +1,6 @@
 <?php
 
-namespace Tourze\RealNameAuthenticationBundle\Dto;
+namespace Tourze\RealNameAuthenticationBundle\VO;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -10,7 +10,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 /**
  * 个人认证数据传输对象
  */
-class PersonalAuthDto
+class PersonalAuthDTO
 {
     #[Assert\NotNull(message: '用户不能为空')]
     public readonly UserInterface $user;

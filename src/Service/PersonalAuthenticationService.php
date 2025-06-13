@@ -7,13 +7,13 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationRepository;
+use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 个人认证服务
@@ -35,7 +35,7 @@ class PersonalAuthenticationService
     /**
      * 提交个人认证
      */
-    public function submitAuthentication(PersonalAuthDto $dto): RealNameAuthentication
+    public function submitAuthentication(PersonalAuthDTO $dto): RealNameAuthentication
     {
         // 验证DTO
         $violations = $this->validator->validate($dto);
@@ -235,7 +235,7 @@ class PersonalAuthenticationService
     /**
      * 处理认证请求
      */
-    private function processAuthentication(RealNameAuthentication $authentication, PersonalAuthDto $dto): void
+    private function processAuthentication(RealNameAuthentication $authentication, PersonalAuthDTO $dto): void
     {
         try {
             $authentication->setStatus(AuthenticationStatus::PROCESSING);

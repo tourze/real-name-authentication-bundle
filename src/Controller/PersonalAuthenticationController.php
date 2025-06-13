@@ -10,9 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Service\PersonalAuthenticationService;
+use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 个人认证控制器
@@ -59,7 +59,7 @@ class PersonalAuthenticationController extends AbstractController
             }
 
             // 创建DTO
-            $dto = new PersonalAuthDto(
+            $dto = new PersonalAuthDTO(
                 user: $user,
                 method: $method,
                 name: $data['name'] ?? null,

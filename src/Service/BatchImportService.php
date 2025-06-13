@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Entity\ImportBatch;
 use Tourze\RealNameAuthenticationBundle\Entity\ImportRecord;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
@@ -16,6 +15,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\ImportRecordStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportStatus;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
+use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 批量导入服务
@@ -422,7 +422,7 @@ class BatchImportService
     /**
      * 创建认证DTO
      */
-    private function createAuthenticationDto(array $data, AuthenticationMethod $method): PersonalAuthDto
+    private function createAuthenticationDto(array $data, AuthenticationMethod $method): PersonalAuthDTO
     {
         // 创建模拟用户（实际应该根据业务逻辑关联真实用户）
         $user = $this->security->getUser();
@@ -430,7 +430,7 @@ class BatchImportService
             throw new \RuntimeException('无法获取当前用户信息');
         }
 
-        return new PersonalAuthDto(
+        return new PersonalAuthDTO(
             user: $user,
             method: $method,
             name: $data['name'] ?? null,

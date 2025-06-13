@@ -6,8 +6,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\RealNameAuthenticationBundle\Dto\PersonalAuthDto;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
+use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 个人认证DTO测试
@@ -29,7 +29,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_constructor_parameters(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
             name: '张三',
@@ -50,7 +50,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_id_card_two_elements_dto(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
             name: '李四',
@@ -67,7 +67,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_carrier_three_elements_dto(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::CARRIER_THREE_ELEMENTS,
             name: '王五',
@@ -86,7 +86,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_bank_card_three_elements_dto(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::BANK_CARD_THREE_ELEMENTS,
             name: '赵六',
@@ -105,7 +105,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_bank_card_four_elements_dto(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS,
             name: '钱七',
@@ -132,7 +132,7 @@ class PersonalAuthDtoTest extends TestCase
             ->method('getClientOriginalName')
             ->willReturn('photo.jpg');
 
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::LIVENESS_DETECTION,
             image: $mockFile
@@ -149,7 +149,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_to_array_method(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS,
             name: '测试用户',
@@ -175,7 +175,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_to_array_with_null_fields(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
             name: '测试用户',
@@ -200,7 +200,7 @@ class PersonalAuthDtoTest extends TestCase
      */
     public function test_readonly_properties(): void
     {
-        $dto = new PersonalAuthDto(
+        $dto = new PersonalAuthDTO(
             user: $this->mockUser,
             method: AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
             name: '测试用户',

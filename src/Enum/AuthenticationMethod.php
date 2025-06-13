@@ -63,4 +63,3 @@ enum AuthenticationMethod: string implements Labelable, Itemable, Selectable
         ]);
     }
 }
- 
