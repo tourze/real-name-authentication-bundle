@@ -13,6 +13,7 @@ use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderRepository;
@@ -32,6 +33,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderReposit
 #[UniqueEntity(fields: ['code'], message: '提供商代码已存在')]
 class AuthenticationProvider implements Stringable
 {
+    use TimestampableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -182,19 +184,7 @@ class AuthenticationProvider implements Stringable
     {
         $this->priority = $priority;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function getCreateTime(): DateTimeImmutable
-    {
-        return $this->createTime;
-    }
-
-    public function getUpdateTime(): DateTimeImmutable
-    {
-        return $this->updateTime;
-    }
-
-    public function isValid(): bool
+    }public function isValid(): bool
     {
         return $this->valid;
     }
@@ -236,15 +226,4 @@ class AuthenticationProvider implements Stringable
     {
         $this->config[$key] = $value;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function setCreateTime(DateTimeImmutable $createTime): void
-    {
-        $this->createTime = $createTime;
-    }
-
-    public function setUpdateTime(DateTimeImmutable $updateTime): void
-    {
-        $this->updateTime = $updateTime;
-    }
-}
+    }}

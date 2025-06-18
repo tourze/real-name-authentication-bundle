@@ -9,6 +9,7 @@ use Stringable;
 use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepository;
 
 /**
@@ -27,6 +28,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepositor
 #[ORM\Index(name: 'authentication_result_idx_success', columns: ['success'])]
 class AuthenticationResult implements Stringable
 {
+    use TimestampableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -186,19 +188,7 @@ class AuthenticationResult implements Stringable
     {
         $this->processingTime = $processingTime;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function getCreateTime(): DateTimeImmutable
-    {
-        return $this->createTime;
-    }
-
-    public function getUpdateTime(): DateTimeImmutable
-    {
-        return $this->updateTime;
-    }
-
-    public function isValid(): bool
+    }public function isValid(): bool
     {
         return $this->valid;
     }
@@ -207,15 +197,4 @@ class AuthenticationResult implements Stringable
     {
         $this->valid = $valid;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function setCreateTime(DateTimeImmutable $createTime): void
-    {
-        $this->createTime = $createTime;
-    }
-
-    public function setUpdateTime(DateTimeImmutable $updateTime): void
-    {
-        $this->updateTime = $updateTime;
-    }
-}
+    }}

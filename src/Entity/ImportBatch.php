@@ -13,6 +13,7 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportStatus;
@@ -32,6 +33,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
 #[ORM\Index(name: 'import_batch_idx_create_time', columns: ['create_time'])]
 class ImportBatch implements Stringable
 {
+    use TimestampableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -299,19 +301,7 @@ class ImportBatch implements Stringable
     {
         $this->remark = $remark;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function getCreateTime(): DateTimeImmutable
-    {
-        return $this->createTime;
-    }
-
-    public function getUpdateTime(): DateTimeImmutable
-    {
-        return $this->updateTime;
-    }
-
-    public function getCreatedBy(): ?string
+    }public function getCreatedBy(): ?string
     {
         return $this->createdBy;
     }
@@ -461,15 +451,4 @@ class ImportBatch implements Stringable
         }
         
         return round(($this->successRecords / $this->processedRecords) * 100, 2);
-    }
-
-    public function setCreateTime(DateTimeImmutable $createTime): void
-    {
-        $this->createTime = $createTime;
-    }
-
-    public function setUpdateTime(DateTimeImmutable $updateTime): void
-    {
-        $this->updateTime = $updateTime;
-    }
-} 
+    }} 

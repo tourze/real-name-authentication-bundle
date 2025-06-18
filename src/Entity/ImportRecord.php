@@ -9,6 +9,7 @@ use Stringable;
 use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportRecordStatus;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
 
@@ -27,6 +28,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
 #[ORM\Index(name: 'import_record_idx_row_number', columns: ['row_number'])]
 class ImportRecord implements Stringable
 {
+    use TimestampableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -203,19 +205,7 @@ class ImportRecord implements Stringable
     {
         $this->processingTime = $processingTime;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function getCreateTime(): DateTimeImmutable
-    {
-        return $this->createTime;
-    }
-
-    public function getUpdateTime(): DateTimeImmutable
-    {
-        return $this->updateTime;
-    }
-
-    public function isValid(): bool
+    }public function isValid(): bool
     {
         return $this->valid;
     }
@@ -314,15 +304,4 @@ class ImportRecord implements Stringable
     public function getProcessedValue(string $field): mixed
     {
         return $this->processedData[$field] ?? null;
-    }
-
-    public function setCreateTime(DateTimeImmutable $createTime): void
-    {
-        $this->createTime = $createTime;
-    }
-
-    public function setUpdateTime(DateTimeImmutable $updateTime): void
-    {
-        $this->updateTime = $updateTime;
-    }
-} 
+    }} 

@@ -13,6 +13,7 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
@@ -39,6 +40,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationReposit
 #[UniqueEntity(fields: ['user', 'type'], message: '用户已有该类型的认证记录')]
 class RealNameAuthentication implements Stringable
 {
+    use TimestampableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -204,19 +206,7 @@ class RealNameAuthentication implements Stringable
     {
         $this->reason = $reason;
         $this->updateTime = new DateTimeImmutable();
-    }
-
-    public function getCreateTime(): DateTimeImmutable
-    {
-        return $this->createTime;
-    }
-
-    public function getUpdateTime(): DateTimeImmutable
-    {
-        return $this->updateTime;
-    }
-
-    public function getExpireTime(): ?DateTimeImmutable
+    }public function getExpireTime(): ?DateTimeImmutable
     {
         return $this->expireTime;
     }
