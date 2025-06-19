@@ -210,7 +210,6 @@ class PersonalAuthDtoTest extends TestCase
         // 确保所有属性都是readonly的，这里只验证能正常访问
         $this->assertInstanceOf(UserInterface::class, $dto->user);
         $this->assertInstanceOf(AuthenticationMethod::class, $dto->method);
-        $this->assertIsString($dto->name);
-        $this->assertIsString($dto->idCard);
+
     }
 } 

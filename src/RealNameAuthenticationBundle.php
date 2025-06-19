@@ -4,6 +4,13 @@ namespace Tourze\RealNameAuthenticationBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
+use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
+use Tourze\DoctrineIpBundle\DoctrineIpBundle;
+use Tourze\DoctrineTimestampBundle\DoctrineTimestampBundle;
+use Tourze\DoctrineTrackBundle\DoctrineTrackBundle;
+use Tourze\DoctrineUserBundle\DoctrineUserBundle;
+use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
+use Tourze\RoutingAutoLoaderBundle\RoutingAutoLoaderBundle;
 
 /**
  * 实名认证Bundle
@@ -13,11 +20,13 @@ class RealNameAuthenticationBundle extends Bundle implements BundleDependencyInt
     public static function getBundleDependencies(): array
     {
         return [
-            \Tourze\RoutingAutoLoaderBundle\RoutingAutoLoaderBundle::class => ['all' => true],
-            \Tourze\DoctrineTimestampBundle\DoctrineTimestampBundle::class => ['all' => true],
-            \Tourze\DoctrineUserBundle\DoctrineUserBundle::class => ['all' => true],
-            \Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class => ['all' => true],
-            \Tourze\DoctrineTrackBundle\DoctrineTrackBundle::class => ['all' => true],
+            RoutingAutoLoaderBundle::class => ['all' => true],
+            EasyAdminMenuBundle::class => ['all' => true],
+            DoctrineTimestampBundle::class => ['all' => true],
+            DoctrineUserBundle::class => ['all' => true],
+            DoctrineIndexedBundle::class => ['all' => true],
+            DoctrineTrackBundle::class => ['all' => true],
+            DoctrineIpBundle::class => ['all' => true],
         ];
     }
 }

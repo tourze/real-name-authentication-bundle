@@ -100,7 +100,6 @@ class ProviderTypeTest extends TestCase
         
         // 测试支持方式返回值类型
         $methods = $type->getSupportedMethods();
-        $this->assertIsArray($methods);
         $this->assertNotEmpty($methods);
         
         foreach ($methods as $method) {

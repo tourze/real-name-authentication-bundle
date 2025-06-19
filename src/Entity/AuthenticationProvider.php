@@ -11,8 +11,6 @@ use Stringable;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
@@ -63,13 +61,6 @@ class AuthenticationProvider implements Stringable
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '优先级', 'default' => 0])]
     private int $priority = 0;
 
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
-    private DateTimeImmutable $createTime;
-
-    #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
-    private DateTimeImmutable $updateTime;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
     private bool $valid = true;
@@ -83,9 +74,8 @@ class AuthenticationProvider implements Stringable
     public function __construct()
     {
         $this->id = Uuid::v7()->toRfc4122();
-        $this->createTime = new DateTimeImmutable();
-        $this->updateTime = new DateTimeImmutable();
         $this->results = new ArrayCollection();
+        // Note: createTime and updateTime are handled by TimestampableAware trait
     }
 
     public function __toString(): string

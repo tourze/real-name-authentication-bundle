@@ -7,8 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
 use Symfony\Component\Uid\Uuid;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportRecordStatus;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
@@ -65,13 +63,6 @@ class ImportRecord implements Stringable
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '处理时长(毫秒)'])]
     private ?int $processingTime = null;
 
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
-    private DateTimeImmutable $createTime;
-
-    #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
-    private DateTimeImmutable $updateTime;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
     private bool $valid = true;
@@ -80,8 +71,7 @@ class ImportRecord implements Stringable
     {
         $this->id = Uuid::v7()->toRfc4122();
         $this->status = ImportRecordStatus::PENDING;
-        $this->createTime = new DateTimeImmutable();
-        $this->updateTime = new DateTimeImmutable();
+        // Note: createTime and updateTime are handled by TimestampableAware trait
     }
 
     public function __toString(): string

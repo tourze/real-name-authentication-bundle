@@ -2,13 +2,10 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Entity;
 
-use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
 use Symfony\Component\Uid\Uuid;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepository;
 
@@ -62,13 +59,6 @@ class AuthenticationResult implements Stringable
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '处理时间（毫秒）'])]
     private int $processingTime;
 
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
-    private DateTimeImmutable $createTime;
-
-    #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
-    private DateTimeImmutable $updateTime;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
     private bool $valid = true;
@@ -76,8 +66,7 @@ class AuthenticationResult implements Stringable
     public function __construct()
     {
         $this->id = Uuid::v7()->toRfc4122();
-        $this->createTime = new DateTimeImmutable();
-        $this->updateTime = new DateTimeImmutable();
+        // Note: createTime and updateTime are handled by TimestampableAware trait
     }
 
     public function __toString(): string
@@ -99,7 +88,7 @@ class AuthenticationResult implements Stringable
     public function setAuthentication(RealNameAuthentication $authentication): void
     {
         $this->authentication = $authentication;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getProvider(): AuthenticationProvider
@@ -110,7 +99,7 @@ class AuthenticationResult implements Stringable
     public function setProvider(AuthenticationProvider $provider): void
     {
         $this->provider = $provider;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getRequestId(): string
@@ -121,7 +110,7 @@ class AuthenticationResult implements Stringable
     public function setRequestId(string $requestId): void
     {
         $this->requestId = $requestId;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function isSuccess(): bool
@@ -132,7 +121,7 @@ class AuthenticationResult implements Stringable
     public function setSuccess(bool $success): void
     {
         $this->success = $success;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getConfidence(): ?float
@@ -143,7 +132,7 @@ class AuthenticationResult implements Stringable
     public function setConfidence(?float $confidence): void
     {
         $this->confidence = $confidence;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getResponseData(): array
@@ -154,7 +143,7 @@ class AuthenticationResult implements Stringable
     public function setResponseData(array $responseData): void
     {
         $this->responseData = $responseData;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getErrorCode(): ?string
@@ -165,7 +154,7 @@ class AuthenticationResult implements Stringable
     public function setErrorCode(?string $errorCode): void
     {
         $this->errorCode = $errorCode;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getErrorMessage(): ?string
@@ -176,7 +165,7 @@ class AuthenticationResult implements Stringable
     public function setErrorMessage(?string $errorMessage): void
     {
         $this->errorMessage = $errorMessage;
-        $this->updateTime = new DateTimeImmutable();
+        
     }
 
     public function getProcessingTime(): int
@@ -187,7 +176,7 @@ class AuthenticationResult implements Stringable
     public function setProcessingTime(int $processingTime): void
     {
         $this->processingTime = $processingTime;
-        $this->updateTime = new DateTimeImmutable();
+        
     }public function isValid(): bool
     {
         return $this->valid;
@@ -196,5 +185,5 @@ class AuthenticationResult implements Stringable
     public function setValid(bool $valid): void
     {
         $this->valid = $valid;
-        $this->updateTime = new DateTimeImmutable();
+        
     }}

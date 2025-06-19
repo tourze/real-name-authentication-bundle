@@ -11,11 +11,8 @@ use Stringable;
 use Symfony\Component\Uid\Uuid;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportStatus;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
 
@@ -34,6 +31,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
 class ImportBatch implements Stringable
 {
     use TimestampableAware;
+    use BlameableAware;
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
     private string $id;
@@ -83,21 +81,6 @@ class ImportBatch implements Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
     private ?string $remark = null;
 
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '创建时间'])]
-    private DateTimeImmutable $createTime;
-
-    #[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '更新时间'])]
-    private DateTimeImmutable $updateTime;
-
-    #[CreatedByColumn]
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true, options: ['comment' => '更新人'])]
-    private ?string $updatedBy = null;
 
     #[CreateIpColumn]
     #[ORM\Column(type: Types::STRING, length: 45, nullable: true, options: ['comment' => '创建IP'])]
@@ -120,9 +103,8 @@ class ImportBatch implements Stringable
     {
         $this->id = Uuid::v7()->toRfc4122();
         $this->status = ImportStatus::PENDING;
-        $this->createTime = new DateTimeImmutable();
-        $this->updateTime = new DateTimeImmutable();
         $this->records = new ArrayCollection();
+        // Note: createTime and updateTime are handled by TimestampableAware trait
     }
 
     public function __toString(): string
@@ -300,25 +282,7 @@ class ImportBatch implements Stringable
     public function setRemark(?string $remark): void
     {
         $this->remark = $remark;
-        $this->updateTime = new DateTimeImmutable();
-    }public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(?string $createdBy): void
-    {
-        $this->createdBy = $createdBy;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): void
-    {
-        $this->updatedBy = $updatedBy;
+        // Note: updateTime is handled by TimestampableAware trait automatically
     }
 
     public function getCreatedFromIp(): ?string
