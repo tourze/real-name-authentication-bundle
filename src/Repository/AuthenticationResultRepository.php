@@ -172,7 +172,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->select('COUNT(r.id) as total, SUM(CASE WHEN r.success = true THEN 1 ELSE 0 END) as success')
             ->andWhere('r.valid = true');
 
-        if ($provider) {
+        if ($provider !== null) {
             $qb->andWhere('r.provider = :provider')
                ->setParameter('provider', $provider);
         }

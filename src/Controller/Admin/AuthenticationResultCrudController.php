@@ -60,7 +60,7 @@ class AuthenticationResultCrudController extends AbstractCrudController
             ->setFormTypeOptions([
                 'choice_label' => function (RealNameAuthentication $auth) {
                     return sprintf('%s - %s (%s)',
-                        $auth->getUserId(),
+                        $auth->getUser()->getUserIdentifier(),
                         $auth->getMethod()->getLabel(),
                         $auth->getStatus()->getLabel()
                     );
@@ -68,7 +68,7 @@ class AuthenticationResultCrudController extends AbstractCrudController
             ])
             ->formatValue(function ($value) {
                 if ($value instanceof RealNameAuthentication) {
-                    return sprintf('%s - %s', $value->getUserId(), $value->getMethod()->getLabel());
+                    return sprintf('%s - %s', $value->getUser()->getUserIdentifier(), $value->getMethod()->getLabel());
                 }
                 return '';
             });

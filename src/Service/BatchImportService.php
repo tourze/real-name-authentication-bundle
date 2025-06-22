@@ -194,7 +194,7 @@ class BatchImportService
 
             // 确定认证方式
             $method = $this->determineAuthenticationMethod($cleanedData);
-            if (!$method) {
+            if ($method === null) {
                 $record->markAsSkipped('无法确定认证方式');
                 $this->entityManager->flush();
                 return;
@@ -426,7 +426,7 @@ class BatchImportService
     {
         // 创建模拟用户（实际应该根据业务逻辑关联真实用户）
         $user = $this->security->getUser();
-        if (!$user) {
+        if ($user === null) {
             throw new \RuntimeException('无法获取当前用户信息');
         }
 

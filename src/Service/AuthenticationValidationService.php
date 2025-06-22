@@ -169,7 +169,7 @@ class AuthenticationValidationService
         for ($count = 0; $count < $numDigits; $count++) {
             $digit = intval($number[$count]);
 
-            if (!(($count & 1) ^ $oddEven)) {
+            if ((($count & 1) ^ $oddEven) === 0) {
                 $digit *= 2;
                 if ($digit > 9) {
                     $digit -= 9;

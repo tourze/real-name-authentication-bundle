@@ -178,12 +178,12 @@ class AuthenticationProviderService
         $appId = $provider->getConfigValue('app_id');
         $appSecret = $provider->getConfigValue('app_secret');
 
-        if ($appId) {
+        if ($appId !== null && $appId !== '') {
             $requestData['app_id'] = $appId;
         }
 
         // 添加签名
-        if ($appSecret) {
+        if ($appSecret !== null && $appSecret !== '') {
             $requestData['timestamp'] = time();
             $requestData['nonce'] = uniqid();
             $requestData['sign'] = $this->generateSignature($data, $appSecret, $requestData['timestamp'], $requestData['nonce']);
@@ -207,7 +207,7 @@ class AuthenticationProviderService
 
         // 添加认证头
         $apiKey = $provider->getConfigValue('api_key');
-        if ($apiKey) {
+        if ($apiKey !== null && $apiKey !== '') {
             $headers['Authorization'] = 'Bearer ' . $apiKey;
         }
 
@@ -239,12 +239,7 @@ class AuthenticationProviderService
     {
         // 这是一个临时解决方案，实际使用时应该传入真正的认证对象
         // 或者重构 AuthenticationResult 的构造函数
-        $authentication = new RealNameAuthentication();
-        $authentication->setUserId('temp_user');
-        $authentication->setType(\Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType::PERSONAL);
-        $authentication->setMethod(\Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
-        $authentication->setSubmittedData([]);
-
-        return $authentication;
+        // 注意：此方法应该被重构，因为创建 RealNameAuthentication 需要真实的用户对象
+        throw new \RuntimeException('createTempAuthentication 方法需要重构，不能创建没有用户的认证记录');
     }
 }

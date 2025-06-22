@@ -95,7 +95,6 @@ class ProviderTypeTest extends TestCase
         $type = ProviderType::GOVERNMENT;
         
         // 测试是否实现了 Labelable 接口
-        $this->assertIsString($type->getLabel());
         $this->assertNotEmpty($type->getLabel());
         
         // 测试支持方式返回值类型

@@ -92,7 +92,6 @@ class AuthenticationMethodTest extends TestCase
         $method = AuthenticationMethod::ID_CARD_TWO_ELEMENTS;
         
         // 测试是否实现了 Labelable 接口
-        $this->assertIsString($method->getLabel());
         $this->assertNotEmpty($method->getLabel());
     }
 } 

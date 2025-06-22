@@ -247,7 +247,7 @@ class ImportRecord implements Stringable
     public function getResultSummary(): string
     {
         return match ($this->status) {
-            ImportRecordStatus::SUCCESS => $this->authentication 
+            ImportRecordStatus::SUCCESS => $this->authentication !== null
                 ? sprintf('成功创建认证记录: %s', $this->authentication->getId())
                 : '处理成功',
             ImportRecordStatus::FAILED => $this->errorMessage ?? '处理失败',

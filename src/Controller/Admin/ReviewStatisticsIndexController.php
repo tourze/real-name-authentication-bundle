@@ -10,21 +10,17 @@ use Symfony\Component\Routing\Attribute\Route;
 use Tourze\RealNameAuthenticationBundle\Service\ManualReviewService;
 
 /**
- * 审核统计控制器
+ * 审核统计首页控制器
  */
-#[Route('/admin/auth/statistics', name: 'admin_auth_statistics_')]
-class ReviewStatisticsController extends AbstractController
+class ReviewStatisticsIndexController extends AbstractController
 {
     public function __construct(
         private readonly ManualReviewService $manualReviewService
     ) {
     }
 
-    /**
-     * 审核统计首页
-     */
-    #[Route('/', name: 'index')]
-    public function index(Request $request): Response
+    #[Route('/admin/auth/statistics', name: 'admin_auth_statistics_index')]
+    public function __invoke(Request $request): Response
     {
         // 获取查询参数
         $startDate = $request->query->get('start_date', (new DateTimeImmutable('-30 days'))->format('Y-m-d'));
@@ -52,19 +48,4 @@ class ReviewStatisticsController extends AbstractController
             'date_range_days' => $startDateTime->diff($endDateTime)->days + 1,
         ]);
     }
-
-    /**
-     * 待审核列表
-     */
-    #[Route('/pending', name: 'pending')]
-    public function pending(Request $request): Response
-    {
-        $limit = $request->query->getInt('limit', 50);
-        $pendingAuthentications = $this->manualReviewService->getPendingAuthentications($limit);
-
-        return $this->render('@RealNameAuthentication/admin/pending_list.html.twig', [
-            'authentications' => $pendingAuthentications,
-            'total_count' => count($pendingAuthentications),
-        ]);
-    }
-} 
+}

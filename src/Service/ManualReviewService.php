@@ -199,7 +199,7 @@ class ManualReviewService
     {
         $authentication = $this->authRepository->find($authId);
         
-        if (!$authentication) {
+        if ($authentication === null) {
             throw new \InvalidArgumentException('认证记录不存在');
         }
 
@@ -227,7 +227,7 @@ class ManualReviewService
     private function getCurrentReviewer(): string
     {
         $user = $this->security->getUser();
-        return $user ? $user->getUserIdentifier() : 'system';
+        return $user !== null ? $user->getUserIdentifier() : 'system';
     }
 
     /**

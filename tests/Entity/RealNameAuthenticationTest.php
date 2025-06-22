@@ -34,12 +34,12 @@ class RealNameAuthenticationTest extends TestCase
         $authentication = new RealNameAuthentication();
 
         // 验证默认值
-        $this->assertIsString($authentication->getId());
         $this->assertNotEmpty($authentication->getId());
         $this->assertEquals(AuthenticationStatus::PENDING, $authentication->getStatus());
         $this->assertTrue($authentication->isValid());
-        $this->assertInstanceOf(DateTimeImmutable::class, $authentication->getCreateTime());
-        $this->assertInstanceOf(DateTimeImmutable::class, $authentication->getUpdateTime());
+        // 时间戳会在持久化时由 Doctrine 自动设置
+        $this->assertNull($authentication->getCreateTime());
+        $this->assertNull($authentication->getUpdateTime());
         $this->assertNull($authentication->getExpireTime());
         $this->assertNull($authentication->getVerificationResult());
         $this->assertNull($authentication->getProviderResponse());

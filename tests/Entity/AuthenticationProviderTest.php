@@ -20,15 +20,15 @@ class AuthenticationProviderTest extends TestCase
         $provider = new AuthenticationProvider();
 
         // 验证默认值
-        $this->assertIsString($provider->getId());
         $this->assertNotEmpty($provider->getId());
         $this->assertTrue($provider->isActive());
         $this->assertTrue($provider->isValid());
         $this->assertEquals(0, $provider->getPriority());
-        $this->assertIsArray($provider->getSupportedMethods());
-        $this->assertIsArray($provider->getConfig());
-        $this->assertNotNull($provider->getCreateTime());
-        $this->assertNotNull($provider->getUpdateTime());
+        $this->assertEmpty($provider->getSupportedMethods());
+        $this->assertEmpty($provider->getConfig());
+        // 时间戳会在持久化时由 Doctrine 自动设置
+        $this->assertNull($provider->getCreateTime());
+        $this->assertNull($provider->getUpdateTime());
     }
 
     /**

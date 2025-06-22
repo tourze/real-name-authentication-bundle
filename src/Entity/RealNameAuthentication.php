@@ -70,7 +70,7 @@ class RealNameAuthentication implements Stringable
     private ?string $reason = null;
 
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '认证过期时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '认证过期时间'])]
     private ?DateTimeImmutable $expireTime = null;
 
 
@@ -94,7 +94,7 @@ class RealNameAuthentication implements Stringable
 
     public function __toString(): string
     {
-        $userIdentifier = $this->user?->getUserIdentifier() ?? 'Unknown';
+        $userIdentifier = $this->user->getUserIdentifier();
         return sprintf('%s-%s(%s)', $this->type->getLabel(), $this->method->getLabel(), $this->status->getLabel());
     }
 

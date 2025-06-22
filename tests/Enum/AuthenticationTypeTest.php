@@ -52,7 +52,6 @@ class AuthenticationTypeTest extends TestCase
         $type = AuthenticationType::PERSONAL;
         
         // 测试是否实现了 Labelable 接口
-        $this->assertIsString($type->getLabel());
         $this->assertNotEmpty($type->getLabel());
     }
 } 

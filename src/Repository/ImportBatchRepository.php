@@ -147,7 +147,7 @@ class ImportBatchRepository extends ServiceEntityRepository
                 'total_records' => (int)$row['totalRecords'],
                 'success_records' => (int)$row['successRecords'],
                 'failed_records' => (int)$row['failedRecords'],
-                'avg_processing_time' => $row['avgProcessingTime'] ? round((float)$row['avgProcessingTime'], 2) : 0,
+                'avg_processing_time' => $row['avgProcessingTime'] !== null ? round((float)$row['avgProcessingTime'], 2) : 0,
             ];
         }
 

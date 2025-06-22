@@ -85,7 +85,6 @@ class AuthenticationStatusTest extends TestCase
         $status = AuthenticationStatus::PENDING;
         
         // 测试是否实现了 Labelable 接口
-        $this->assertIsString($status->getLabel());
         $this->assertNotEmpty($status->getLabel());
     }
 } 

@@ -40,7 +40,11 @@ class PersonalAuthenticationService
         // 验证DTO
         $violations = $this->validator->validate($dto);
         if (count($violations) > 0) {
-            throw new \InvalidArgumentException('认证数据验证失败: ' . (string) $violations);
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+            }
+            throw new \InvalidArgumentException('认证数据验证失败: ' . implode(', ', $errors));
         }
 
         // 检查频率限制
@@ -54,7 +58,7 @@ class PersonalAuthenticationService
             AuthenticationType::PERSONAL
         );
 
-        if ($existingAuth) {
+        if ($existingAuth !== null) {
             throw new \RuntimeException('用户已有有效的个人认证记录');
         }
 
@@ -96,7 +100,7 @@ class PersonalAuthenticationService
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
-        if (!$provider) {
+        if ($provider === null) {
             throw new \RuntimeException('没有可用的身份证验证提供商');
         }
 
@@ -121,7 +125,7 @@ class PersonalAuthenticationService
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
-        if (!$provider) {
+        if ($provider === null) {
             throw new \RuntimeException('没有可用的运营商验证提供商');
         }
 
@@ -146,7 +150,7 @@ class PersonalAuthenticationService
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::BANK_CARD_THREE_ELEMENTS);
-        if (!$provider) {
+        if ($provider === null) {
             throw new \RuntimeException('没有可用的银行卡验证提供商');
         }
 
@@ -175,7 +179,7 @@ class PersonalAuthenticationService
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS);
-        if (!$provider) {
+        if ($provider === null) {
             throw new \RuntimeException('没有可用的银行卡验证提供商');
         }
 
@@ -201,7 +205,7 @@ class PersonalAuthenticationService
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::LIVENESS_DETECTION);
-        if (!$provider) {
+        if ($provider === null) {
             throw new \RuntimeException('没有可用的活体检测提供商');
         }
 
@@ -225,7 +229,7 @@ class PersonalAuthenticationService
     {
         $authentication = $this->authRepository->find($authId);
         
-        if (!$authentication) {
+        if ($authentication === null) {
             throw new \InvalidArgumentException('认证记录不存在');
         }
 

@@ -63,10 +63,10 @@ class ImportBatch implements Stringable
     #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '失败记录数'])]
     private int $failedRecords = 0;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '开始处理时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始处理时间'])]
     private ?DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '完成时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '完成时间'])]
     private ?DateTimeImmutable $finishTime = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '处理时长(秒)'])]
@@ -343,7 +343,7 @@ class ImportBatch implements Stringable
     {
         $this->processedRecords = $this->successRecords + $this->failedRecords;
         
-        if ($this->startTime && $this->finishTime) {
+        if ($this->startTime !== null && $this->finishTime !== null) {
             $this->processingDuration = $this->finishTime->getTimestamp() - $this->startTime->getTimestamp();
         }
         

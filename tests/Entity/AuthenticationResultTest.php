@@ -59,7 +59,6 @@ class AuthenticationResultTest extends TestCase
         $result->setProcessingTime(0);
 
         // 验证默认值
-        $this->assertIsString($result->getId());
         $this->assertNotEmpty($result->getId());
         $this->assertFalse($result->isSuccess());
         $this->assertNull($result->getConfidence());
@@ -68,7 +67,8 @@ class AuthenticationResultTest extends TestCase
         $this->assertNull($result->getErrorMessage());
         $this->assertEquals(0, $result->getProcessingTime());
         $this->assertTrue($result->isValid());
-        $this->assertNotNull($result->getCreateTime());
+        // 时间戳会在持久化时由 Doctrine 自动设置
+        $this->assertNull($result->getCreateTime());
     }
 
     /**
