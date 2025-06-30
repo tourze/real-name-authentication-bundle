@@ -10,7 +10,7 @@ use Tourze\EnumExtra\SelectTrait;
 
 /**
  * 导入记录状态枚举
- * 
+ *
  * 表示单条导入记录的处理状态
  */
 enum ImportRecordStatus: string implements Labelable, Itemable, Selectable

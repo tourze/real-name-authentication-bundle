@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class PersonalAuthFormLivenessController extends AbstractController
 {
 
-    #[Route('/auth/personal/liveness', name: 'auth_personal_liveness')]
+    #[Route(path: '/auth/personal/liveness', name: 'auth_personal_liveness')]
     public function __invoke(Request $request): Response
     {
         if ($request->isMethod('POST')) {

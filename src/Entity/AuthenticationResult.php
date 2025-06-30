@@ -88,7 +88,6 @@ class AuthenticationResult implements Stringable
     public function setAuthentication(RealNameAuthentication $authentication): void
     {
         $this->authentication = $authentication;
-        
     }
 
     public function getProvider(): AuthenticationProvider
@@ -99,7 +98,6 @@ class AuthenticationResult implements Stringable
     public function setProvider(AuthenticationProvider $provider): void
     {
         $this->provider = $provider;
-        
     }
 
     public function getRequestId(): string
@@ -110,7 +108,6 @@ class AuthenticationResult implements Stringable
     public function setRequestId(string $requestId): void
     {
         $this->requestId = $requestId;
-        
     }
 
     public function isSuccess(): bool
@@ -121,7 +118,6 @@ class AuthenticationResult implements Stringable
     public function setSuccess(bool $success): void
     {
         $this->success = $success;
-        
     }
 
     public function getConfidence(): ?float
@@ -132,7 +128,6 @@ class AuthenticationResult implements Stringable
     public function setConfidence(?float $confidence): void
     {
         $this->confidence = $confidence;
-        
     }
 
     public function getResponseData(): array
@@ -143,7 +138,6 @@ class AuthenticationResult implements Stringable
     public function setResponseData(array $responseData): void
     {
         $this->responseData = $responseData;
-        
     }
 
     public function getErrorCode(): ?string
@@ -154,7 +148,6 @@ class AuthenticationResult implements Stringable
     public function setErrorCode(?string $errorCode): void
     {
         $this->errorCode = $errorCode;
-        
     }
 
     public function getErrorMessage(): ?string
@@ -165,7 +158,6 @@ class AuthenticationResult implements Stringable
     public function setErrorMessage(?string $errorMessage): void
     {
         $this->errorMessage = $errorMessage;
-        
     }
 
     public function getProcessingTime(): int
@@ -176,8 +168,9 @@ class AuthenticationResult implements Stringable
     public function setProcessingTime(int $processingTime): void
     {
         $this->processingTime = $processingTime;
-        
-    }public function isValid(): bool
+    }
+
+    public function isValid(): bool
     {
         return $this->valid;
     }
@@ -185,5 +178,5 @@ class AuthenticationResult implements Stringable
     public function setValid(bool $valid): void
     {
         $this->valid = $valid;
-        
-    }}
+    }
+}

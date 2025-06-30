@@ -17,7 +17,7 @@ class PersonalAuthFormStatusController extends AbstractController
     ) {
     }
 
-    #[Route('/auth/personal/status/{authId}', name: 'auth_personal_status')]
+    #[Route(path: '/auth/personal/status/{authId}', name: 'auth_personal_status')]
     public function __invoke(string $authId): Response
     {
         try {

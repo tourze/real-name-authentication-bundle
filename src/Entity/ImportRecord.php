@@ -13,7 +13,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
 
 /**
  * 导入记录实体
- * 
+ *
  * 记录每条导入记录的处理结果和详细信息
  */
 #[ORM\Entity(repositoryClass: ImportRecordRepository::class)]
@@ -195,7 +195,9 @@ class ImportRecord implements Stringable
     {
         $this->processingTime = $processingTime;
         $this->updateTime = new DateTimeImmutable();
-    }public function isValid(): bool
+    }
+
+    public function isValid(): bool
     {
         return $this->valid;
     }
@@ -294,4 +296,5 @@ class ImportRecord implements Stringable
     public function getProcessedValue(string $field): mixed
     {
         return $this->processedData[$field] ?? null;
-    }} 
+    }
+} 

@@ -18,7 +18,7 @@ class ReviewStatisticsPendingController extends AbstractController
     ) {
     }
 
-    #[Route('/admin/auth/statistics/pending', name: 'admin_auth_statistics_pending')]
+    #[Route(path: '/admin/auth/statistics/pending', name: 'admin_auth_statistics_pending')]
     public function __invoke(Request $request): Response
     {
         $limit = $request->query->getInt('limit', 50);

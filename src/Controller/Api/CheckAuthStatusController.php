@@ -21,7 +21,7 @@ class CheckAuthStatusController extends AbstractController
     ) {
     }
 
-    #[Route('/api/auth/personal/status/{authId}', name: 'api_auth_personal_status', methods: ['GET'])]
+    #[Route(path: '/api/auth/personal/status/{authId}', name: 'api_auth_personal_status', methods: ['GET'])]
     public function __invoke(string $authId): JsonResponse
     {
         try {

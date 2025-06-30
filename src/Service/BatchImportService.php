@@ -13,13 +13,15 @@ use Tourze\RealNameAuthenticationBundle\Entity\ImportRecord;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportRecordStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportStatus;
+use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
+use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataException;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
 use Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository;
 use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 批量导入服务
- * 
+ *
  * 处理实名认证信息的批量导入功能
  */
 class BatchImportService
@@ -246,7 +248,7 @@ class BatchImportService
     private function validateFile(UploadedFile $file): void
     {
         if (!$file->isValid()) {
-            throw new \InvalidArgumentException('文件上传失败');
+            throw new InvalidAuthenticationDataException('文件上传失败');
         }
 
         $allowedMimeTypes = [
@@ -258,12 +260,12 @@ class BatchImportService
         ];
 
         if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
-            throw new \InvalidArgumentException('不支持的文件类型: ' . $file->getMimeType());
+            throw new InvalidAuthenticationDataException('不支持的文件类型: ' . $file->getMimeType());
         }
 
         // 检查文件大小（最大10MB）
         if ($file->getSize() > 10 * 1024 * 1024) {
-            throw new \InvalidArgumentException('文件大小超过限制（10MB）');
+            throw new InvalidAuthenticationDataException('文件大小超过限制（10MB）');
         }
     }
 
@@ -286,7 +288,7 @@ class BatchImportService
             return 'excel';
         }
 
-        throw new \InvalidArgumentException('无法识别的文件类型');
+        throw new InvalidAuthenticationDataException('无法识别的文件类型');
     }
 
     /**
@@ -300,7 +302,7 @@ class BatchImportService
             case 'excel':
                 return $this->parseExcelFile($file);
             default:
-                throw new \InvalidArgumentException('不支持的文件类型: ' . $fileType);
+                throw new InvalidAuthenticationDataException('不支持的文件类型: ' . $fileType);
         }
     }
 
@@ -313,18 +315,18 @@ class BatchImportService
         $handle = fopen($file->getPathname(), 'r');
         
         if (!$handle) {
-            throw new \RuntimeException('无法打开CSV文件');
+            throw new AuthenticationException('无法打开CSV文件');
         }
 
         // 读取头部行
         $headers = fgetcsv($handle);
         if (!$headers) {
             fclose($handle);
-            throw new \InvalidArgumentException('CSV文件格式错误：缺少头部行');
+            throw new InvalidAuthenticationDataException('CSV文件格式错误：缺少头部行');
         }
 
         // 标准化头部字段名
-        $headers = array_map([$this, 'normalizeFieldName'], $headers);
+        $headers = array_map(fn($field) => $this->normalizeFieldName($field), $headers);
 
         // 读取数据行
         $rowNumber = 0;
@@ -346,7 +348,7 @@ class BatchImportService
      */
     private function parseExcelFile(UploadedFile $file): array
     {
-        throw new \RuntimeException('Excel文件解析功能需要安装PhpSpreadsheet扩展包');
+        throw new AuthenticationException('Excel文件解析功能需要安装PhpSpreadsheet扩展包');
     }
 
     /**
@@ -427,7 +429,7 @@ class BatchImportService
         // 创建模拟用户（实际应该根据业务逻辑关联真实用户）
         $user = $this->security->getUser();
         if ($user === null) {
-            throw new \RuntimeException('无法获取当前用户信息');
+            throw new AuthenticationException('无法获取当前用户信息');
         }
 
         return new PersonalAuthDTO(
@@ -492,7 +494,7 @@ class BatchImportService
     public function cancelBatch(ImportBatch $batch): void
     {
         if (!$batch->getStatus()->isCancellable()) {
-            throw new \InvalidArgumentException('当前状态不允许取消');
+            throw new InvalidAuthenticationDataException('当前状态不允许取消');
         }
 
         $batch->setStatus(ImportStatus::CANCELLED);

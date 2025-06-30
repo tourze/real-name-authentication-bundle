@@ -17,7 +17,7 @@ class PersonalAuthFormHistoryController extends AbstractController
     ) {
     }
 
-    #[Route('/auth/personal/history', name: 'auth_personal_history')]
+    #[Route(path: '/auth/personal/history', name: 'auth_personal_history')]
     public function __invoke(): Response
     {
         $user = $this->getUser();

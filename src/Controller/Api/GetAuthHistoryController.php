@@ -21,7 +21,7 @@ class GetAuthHistoryController extends AbstractController
     ) {
     }
 
-    #[Route('/api/auth/personal/history', name: 'api_auth_personal_history', methods: ['GET'])]
+    #[Route(path: '/api/auth/personal/history', name: 'api_auth_personal_history', methods: ['GET'])]
     public function __invoke(): JsonResponse
     {
         try {

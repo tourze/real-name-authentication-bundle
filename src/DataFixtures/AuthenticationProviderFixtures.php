@@ -10,7 +10,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 
 /**
  * 认证提供商数据填充
- * 
+ *
  * 创建各种类型的认证服务提供商，用于测试和演示
  */
 class AuthenticationProviderFixtures extends Fixture

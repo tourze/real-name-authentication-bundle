@@ -8,11 +8,13 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
+use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
+use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataException;
 use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationRepository;
 
 /**
  * 人工审核服务
- * 
+ *
  * 提供后台管理员手动审核认证申请的功能
  */
 class ManualReviewService
@@ -34,7 +36,7 @@ class ManualReviewService
         
         // 检查当前状态是否可以审核
         if (!$this->canReview($authentication)) {
-            throw new \InvalidArgumentException('该认证记录当前状态不允许审核');
+            throw new AuthenticationException('该认证记录当前状态不允许审核');
         }
 
         $reviewer = $this->getCurrentReviewer();
@@ -74,14 +76,14 @@ class ManualReviewService
     public function rejectAuthentication(string $authId, string $reason, ?string $reviewNote = null): RealNameAuthentication
     {
         if (empty($reason)) {
-            throw new \InvalidArgumentException('拒绝认证必须提供拒绝原因');
+            throw new InvalidAuthenticationDataException('拒绝认证必须提供拒绝原因');
         }
 
         $authentication = $this->getAuthenticationForReview($authId);
         
         // 检查当前状态是否可以审核
         if (!$this->canReview($authentication)) {
-            throw new \InvalidArgumentException('该认证记录当前状态不允许审核');
+            throw new AuthenticationException('该认证记录当前状态不允许审核');
         }
 
         $reviewer = $this->getCurrentReviewer();
@@ -119,11 +121,11 @@ class ManualReviewService
     public function batchReview(array $authIds, string $action, ?string $reason = null, ?string $reviewNote = null): array
     {
         if (!in_array($action, ['approve', 'reject'])) {
-            throw new \InvalidArgumentException('无效的审核操作');
+            throw new InvalidAuthenticationDataException('无效的审核操作');
         }
 
         if ($action === 'reject' && empty($reason)) {
-            throw new \InvalidArgumentException('批量拒绝必须提供拒绝原因');
+            throw new InvalidAuthenticationDataException('批量拒绝必须提供拒绝原因');
         }
 
         $results = [];
@@ -200,11 +202,11 @@ class ManualReviewService
         $authentication = $this->authRepository->find($authId);
         
         if ($authentication === null) {
-            throw new \InvalidArgumentException('认证记录不存在');
+            throw new AuthenticationException('认证记录不存在');
         }
 
         if (!$authentication->isValid()) {
-            throw new \InvalidArgumentException('认证记录已失效');
+            throw new AuthenticationException('认证记录已失效');
         }
 
         return $authentication;

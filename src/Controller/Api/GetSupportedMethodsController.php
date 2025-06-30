@@ -12,7 +12,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  */
 class GetSupportedMethodsController extends AbstractController
 {
-    #[Route('/api/auth/personal/methods', name: 'api_auth_personal_methods', methods: ['GET'])]
+    #[Route(path: '/api/auth/personal/methods', name: 'api_auth_personal_methods', methods: ['GET'])]
     public function __invoke(): JsonResponse
     {
         $methods = [];

@@ -29,6 +29,7 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
+use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataException;
 use Tourze\RealNameAuthenticationBundle\Service\ManualReviewService;
 
 /**
@@ -203,7 +204,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
     /**
      * 通过认证申请
      */
-    #[AdminAction('{entityId}/approveAuthentication', 'approveAuthentication')]
+    #[AdminAction(routePath: '{entityId}/approveAuthentication', routeName: 'approveAuthentication')]
     public function approveAuthentication(AdminContext $context, Request $request): Response
     {
         /** @var RealNameAuthentication $authentication */
@@ -224,7 +225,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
     /**
      * 拒绝认证申请
      */
-    #[AdminAction('{entityId}/rejectAuthentication', 'rejectAuthentication', methods: ['GET', 'POST'])]
+    #[AdminAction(routePath: '{entityId}/rejectAuthentication', routeName: 'rejectAuthentication', methods: ['GET', 'POST'])]
     public function rejectAuthentication(AdminContext $context, Request $request): Response
     {
         /** @var RealNameAuthentication $authentication */
@@ -244,7 +245,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             $reviewNote = $request->request->get('review_note', '管理员手动拒绝');
 
             if (empty($reason)) {
-                throw new \InvalidArgumentException('请提供拒绝原因');
+                throw new InvalidAuthenticationDataException('请提供拒绝原因');
             }
 
             $this->manualReviewService->rejectAuthentication($authentication->getId(), $reason, $reviewNote);

@@ -415,4 +415,5 @@ class ImportBatch implements Stringable
         }
         
         return round(($this->successRecords / $this->processedRecords) * 100, 2);
-    }} 
+    }
+} 

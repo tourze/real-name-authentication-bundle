@@ -26,7 +26,7 @@ class SubmitPersonalAuthController extends AbstractController
     ) {
     }
 
-    #[Route('/api/auth/personal/submit', name: 'api_auth_personal_submit', methods: ['POST'])]
+    #[Route(path: '/api/auth/personal/submit', name: 'api_auth_personal_submit', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         try {

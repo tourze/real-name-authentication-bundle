@@ -12,7 +12,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 
 /**
  * 实名认证Repository实现
- * 
+ *
  * @method RealNameAuthentication|null find($id, $lockMode = null, $lockVersion = null)
  * @method RealNameAuthentication|null findOneBy(array $criteria, array $orderBy = null)
  * @method RealNameAuthentication[] findAll()

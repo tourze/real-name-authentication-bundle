@@ -21,6 +21,7 @@
     "symfony/doctrine-bridge": "^6.4",
     "symfony/form": "^6.4",
     "symfony/framework-bundle": "^6.4",
+    "symfony/http-client": "^6.4",
     "symfony/http-client-contracts": "^2.5 | ^3.0",
     "symfony/http-foundation": "^6.4",
     "symfony/http-kernel": "^6.4",
@@ -37,6 +38,7 @@
     "tourze/doctrine-user-bundle": "0.0.*",
     "tourze/easy-admin-menu-bundle": "0.1.*",
     "tourze/enum-extra": "0.1.*",
+    "tourze/symfony-integration-test-kernel": "0.0.*",
     "tourze/symfony-routing-auto-loader-bundle": "0.0.*"
   },
   "require-dev": {

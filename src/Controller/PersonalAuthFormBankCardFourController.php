@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class PersonalAuthFormBankCardFourController extends AbstractController
 {
 
-    #[Route('/auth/personal/bank-card-four', name: 'auth_personal_bank_card_four')]
+    #[Route(path: '/auth/personal/bank-card-four', name: 'auth_personal_bank_card_four')]
     public function __invoke(Request $request): Response
     {
         if ($request->isMethod('POST')) {

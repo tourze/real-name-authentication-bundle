@@ -8,7 +8,7 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * 控制器路由加载器
- * 
+ *
  * 加载所有控制器的路由配置
  */
 class AttributeControllerLoader extends Loader
@@ -46,12 +46,12 @@ class AttributeControllerLoader extends Loader
         return $collection;
     }
 
-    public function load($resource, string $type = null): RouteCollection
+    public function load($resource, ?string $type = null): RouteCollection
     {
         return $this->autoload();
     }
 
-    public function supports($resource, string $type = null): bool
+    public function supports($resource, ?string $type = null): bool
     {
         return 'real_name_authentication' === $type;
     }

@@ -8,7 +8,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 
 /**
  * 认证验证服务
- * 
+ *
  * 负责验证各种认证数据的格式和合法性
  */
 class AuthenticationValidationService

@@ -12,12 +12,15 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
+use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
+use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataException;
+use Tourze\RealNameAuthenticationBundle\Exception\ProviderNotAvailableException;
 use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationRepository;
 use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
 
 /**
  * 个人认证服务
- * 
+ *
  * 处理个人实名认证相关的业务逻辑
  */
 class PersonalAuthenticationService
@@ -44,12 +47,12 @@ class PersonalAuthenticationService
             foreach ($violations as $violation) {
                 $errors[] = $violation->getMessage();
             }
-            throw new \InvalidArgumentException('认证数据验证失败: ' . implode(', ', $errors));
+            throw new InvalidAuthenticationDataException('认证数据验证失败: ' . implode(', ', $errors));
         }
 
         // 检查频率限制
         if (!$this->validationService->checkRateLimiting($dto->user->getUserIdentifier(), $dto->method)) {
-            throw new \RuntimeException('认证请求过于频繁，请稍后再试');
+            throw new AuthenticationException('认证请求过于频繁，请稍后再试');
         }
 
         // 检查是否已有有效认证
@@ -59,7 +62,7 @@ class PersonalAuthenticationService
         );
 
         if ($existingAuth !== null) {
-            throw new \RuntimeException('用户已有有效的个人认证记录');
+            throw new AuthenticationException('用户已有有效的个人认证记录');
         }
 
         // 清理输入数据
@@ -95,13 +98,13 @@ class PersonalAuthenticationService
     {
         // 格式验证
         if (!$this->validationService->validateIdCardFormat($idCard)) {
-            throw new \InvalidArgumentException('身份证号码格式不正确');
+            throw new InvalidAuthenticationDataException('身份证号码格式不正确');
         }
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         if ($provider === null) {
-            throw new \RuntimeException('没有可用的身份证验证提供商');
+            throw new ProviderNotAvailableException('没有可用的身份证验证提供商');
         }
 
         // 执行验证
@@ -116,17 +119,17 @@ class PersonalAuthenticationService
     {
         // 格式验证
         if (!$this->validationService->validateIdCardFormat($idCard)) {
-            throw new \InvalidArgumentException('身份证号码格式不正确');
+            throw new InvalidAuthenticationDataException('身份证号码格式不正确');
         }
 
         if (!$this->validationService->validateMobileFormat($mobile)) {
-            throw new \InvalidArgumentException('手机号码格式不正确');
+            throw new InvalidAuthenticationDataException('手机号码格式不正确');
         }
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
         if ($provider === null) {
-            throw new \RuntimeException('没有可用的运营商验证提供商');
+            throw new ProviderNotAvailableException('没有可用的运营商验证提供商');
         }
 
         // 执行验证
@@ -141,17 +144,17 @@ class PersonalAuthenticationService
     {
         // 格式验证
         if (!$this->validationService->validateIdCardFormat($idCard)) {
-            throw new \InvalidArgumentException('身份证号码格式不正确');
+            throw new InvalidAuthenticationDataException('身份证号码格式不正确');
         }
         
         if (!$this->validationService->validateBankCardFormat($bankCard)) {
-            throw new \InvalidArgumentException('银行卡号格式不正确');
+            throw new InvalidAuthenticationDataException('银行卡号格式不正确');
         }
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::BANK_CARD_THREE_ELEMENTS);
         if ($provider === null) {
-            throw new \RuntimeException('没有可用的银行卡验证提供商');
+            throw new ProviderNotAvailableException('没有可用的银行卡验证提供商');
         }
 
         // 执行验证
@@ -166,21 +169,21 @@ class PersonalAuthenticationService
     {
         // 格式验证
         if (!$this->validationService->validateIdCardFormat($idCard)) {
-            throw new \InvalidArgumentException('身份证号码格式不正确');
+            throw new InvalidAuthenticationDataException('身份证号码格式不正确');
         }
         
         if (!$this->validationService->validateBankCardFormat($bankCard)) {
-            throw new \InvalidArgumentException('银行卡号格式不正确');
+            throw new InvalidAuthenticationDataException('银行卡号格式不正确');
         }
         
         if (!$this->validationService->validateMobileFormat($mobile)) {
-            throw new \InvalidArgumentException('手机号码格式不正确');
+            throw new InvalidAuthenticationDataException('手机号码格式不正确');
         }
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS);
         if ($provider === null) {
-            throw new \RuntimeException('没有可用的银行卡验证提供商');
+            throw new ProviderNotAvailableException('没有可用的银行卡验证提供商');
         }
 
         // 执行验证
@@ -195,18 +198,18 @@ class PersonalAuthenticationService
     {
         // 验证文件类型
         if (!in_array($image->getMimeType(), ['image/jpeg', 'image/png'])) {
-            throw new \InvalidArgumentException('不支持的图片格式');
+            throw new InvalidAuthenticationDataException('不支持的图片格式');
         }
 
         // 验证文件大小（最大5MB）
         if ($image->getSize() > 5 * 1024 * 1024) {
-            throw new \InvalidArgumentException('图片文件过大');
+            throw new InvalidAuthenticationDataException('图片文件过大');
         }
 
         // 获取最佳提供商
         $provider = $this->providerService->selectBestProvider(AuthenticationMethod::LIVENESS_DETECTION);
         if ($provider === null) {
-            throw new \RuntimeException('没有可用的活体检测提供商');
+            throw new ProviderNotAvailableException('没有可用的活体检测提供商');
         }
 
         // 执行验证
@@ -230,7 +233,7 @@ class PersonalAuthenticationService
         $authentication = $this->authRepository->find($authId);
         
         if ($authentication === null) {
-            throw new \InvalidArgumentException('认证记录不存在');
+            throw new InvalidAuthenticationDataException('认证记录不存在');
         }
 
         return $authentication;

@@ -12,7 +12,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  */
 class PersonalAuthFormIndexController extends AbstractController
 {
-    #[Route('/auth/personal', name: 'auth_personal_index')]
+    #[Route(path: '/auth/personal', name: 'auth_personal_index')]
     public function __invoke(): Response
     {
         $methods = [];

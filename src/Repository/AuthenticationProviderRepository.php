@@ -10,7 +10,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 
 /**
  * 认证提供商Repository实现
- * 
+ *
  * @method AuthenticationProvider|null find($id, $lockMode = null, $lockVersion = null)
  * @method AuthenticationProvider|null findOneBy(array $criteria, array $orderBy = null)
  * @method AuthenticationProvider[] findAll()
@@ -45,8 +45,8 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
-            ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
-            ->setParameter('method', '"' . $method->value . '"')
+            ->andWhere('p.supportedMethods LIKE :method')
+            ->setParameter('method', '%"' . $method->value . '"%')
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.createTime', 'ASC')
             ->getQuery()
@@ -62,9 +62,9 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->andWhere('p.type = :type')
             ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
-            ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
+            ->andWhere('p.supportedMethods LIKE :method')
             ->setParameter('type', $type)
-            ->setParameter('method', '"' . $method->value . '"')
+            ->setParameter('method', '%"' . $method->value . '"%')
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.createTime', 'ASC')
             ->getQuery()
@@ -106,8 +106,8 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.active = true')
             ->andWhere('p.valid = true')
-            ->andWhere('JSON_CONTAINS(p.supportedMethods, :method) = 1')
-            ->setParameter('method', '"' . $method->value . '"')
+            ->andWhere('p.supportedMethods LIKE :method')
+            ->setParameter('method', '%"' . $method->value . '"%')
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.createTime', 'ASC')
             ->setMaxResults(1)

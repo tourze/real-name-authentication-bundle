@@ -10,7 +10,7 @@ use Tourze\EnumExtra\SelectTrait;
 
 /**
  * 导入状态枚举
- * 
+ *
  * 表示批量导入的各种状态
  */
 enum ImportStatus: string implements Labelable, Itemable, Selectable

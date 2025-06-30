@@ -189,7 +189,9 @@ class RealNameAuthentication implements Stringable
     {
         $this->reason = $reason;
         $this->updateTime = new DateTimeImmutable();
-    }public function getExpireTime(): ?DateTimeImmutable
+    }
+
+    public function getExpireTime(): ?DateTimeImmutable
     {
         return $this->expireTime;
     }

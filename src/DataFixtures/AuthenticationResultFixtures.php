@@ -11,7 +11,7 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 
 /**
  * 认证结果数据填充
- * 
+ *
  * 创建各种认证结果记录，用于测试和演示
  */
 class AuthenticationResultFixtures extends Fixture implements DependentFixtureInterface

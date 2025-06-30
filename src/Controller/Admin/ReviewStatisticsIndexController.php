@@ -19,7 +19,7 @@ class ReviewStatisticsIndexController extends AbstractController
     ) {
     }
 
-    #[Route('/admin/auth/statistics', name: 'admin_auth_statistics_index')]
+    #[Route(path: '/admin/auth/statistics', name: 'admin_auth_statistics_index')]
     public function __invoke(Request $request): Response
     {
         // 获取查询参数

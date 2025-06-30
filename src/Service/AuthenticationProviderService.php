@@ -8,11 +8,12 @@ use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
+use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderRepository;
 
 /**
  * 认证提供商服务
- * 
+ *
  * 管理认证提供商的选择和调用
  */
 class AuthenticationProviderService
@@ -240,6 +241,6 @@ class AuthenticationProviderService
         // 这是一个临时解决方案，实际使用时应该传入真正的认证对象
         // 或者重构 AuthenticationResult 的构造函数
         // 注意：此方法应该被重构，因为创建 RealNameAuthentication 需要真实的用户对象
-        throw new \RuntimeException('createTempAuthentication 方法需要重构，不能创建没有用户的认证记录');
+        throw new AuthenticationException('createTempAuthentication 方法需要重构，不能创建没有用户的认证记录');
     }
 }

@@ -174,7 +174,9 @@ class AuthenticationProvider implements Stringable
     {
         $this->priority = $priority;
         $this->updateTime = new DateTimeImmutable();
-    }public function isValid(): bool
+    }
+
+    public function isValid(): bool
     {
         return $this->valid;
     }
@@ -216,4 +218,5 @@ class AuthenticationProvider implements Stringable
     {
         $this->config[$key] = $value;
         $this->updateTime = new DateTimeImmutable();
-    }}
+    }
+}
