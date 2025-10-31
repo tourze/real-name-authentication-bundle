@@ -2,22 +2,15 @@
 
 namespace Tourze\RealNameAuthenticationBundle\DependencyInjection;
 
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Tourze\SymfonyDependencyServiceLoader\AutoExtension;
 
 /**
  * 实名认证Bundle扩展配置
  */
-class RealNameAuthenticationExtension extends Extension
+class RealNameAuthenticationExtension extends AutoExtension
 {
-    public function load(array $configs, ContainerBuilder $container): void
+    protected function getConfigDir(): string
     {
-        $loader = new YamlFileLoader(
-            $container,
-            new FileLocator(__DIR__ . '/../Resources/config')
-        );
-        $loader->load('services.yaml');
+        return __DIR__ . '/../Resources/config';
     }
 }

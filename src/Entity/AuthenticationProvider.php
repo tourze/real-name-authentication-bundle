@@ -2,14 +2,13 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Entity;
 
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
@@ -26,43 +25,66 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderReposit
     name: 'authentication_provider',
     options: ['comment' => '认证提供商表']
 )]
-#[ORM\Index(name: 'authentication_provider_idx_type', columns: ['type'])]
-#[ORM\Index(name: 'authentication_provider_idx_active', columns: ['active'])]
 #[UniqueEntity(fields: ['code'], message: '提供商代码已存在')]
-class AuthenticationProvider implements Stringable
+class AuthenticationProvider implements \Stringable
 {
     use TimestampableAware;
+
     #[ORM\Id]
-    #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[ORM\CustomIdGenerator]
+    #[ORM\Column(name: 'id', type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[Assert\Length(max: 36)]
     private string $id;
 
-    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => '提供商名称'])]
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 100, options: ['comment' => '提供商名称'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     private string $name;
 
-    #[IndexColumn]
-    #[ORM\Column(type: Types::STRING, length: 50, unique: true, options: ['comment' => '提供商代码'])]
+    #[ORM\Column(name: 'code', type: Types::STRING, length: 50, unique: true, options: ['comment' => '提供商代码'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 50)]
     private string $code;
 
-    #[ORM\Column(type: Types::STRING, enumType: ProviderType::class, options: ['comment' => '提供商类型'])]
+    #[ORM\Column(name: 'type', type: Types::STRING, enumType: ProviderType::class, options: ['comment' => '提供商类型'])]
+    #[IndexColumn]
+    #[Assert\NotNull]
+    #[Assert\Choice(callback: [ProviderType::class, 'cases'])]
     private ProviderType $type;
 
-    #[ORM\Column(type: Types::JSON, options: ['comment' => '支持的认证方式'])]
+    /** @var array<string> */
+    #[ORM\Column(name: 'supported_methods', type: Types::JSON, options: ['comment' => '支持的认证方式'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'array')]
     private array $supportedMethods = [];
 
-    #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => 'API接口地址'])]
+    #[ORM\Column(name: 'api_endpoint', type: Types::STRING, length: 255, options: ['comment' => 'API接口地址'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    #[Assert\Url]
     private string $apiEndpoint;
 
-    #[ORM\Column(type: Types::JSON, options: ['comment' => '配置信息（加密存储）'])]
+    /** @var array<string, mixed> */
+    #[ORM\Column(name: 'config', type: Types::JSON, options: ['comment' => '配置信息（加密存储）'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'array')]
     private array $config = [];
 
-    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否启用', 'default' => true])]
+    #[ORM\Column(name: 'active', type: Types::BOOLEAN, options: ['comment' => '是否启用', 'default' => true])]
+    #[IndexColumn]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'bool')]
     private bool $active = true;
 
-    #[ORM\Column(type: Types::INTEGER, options: ['comment' => '优先级', 'default' => 0])]
+    #[ORM\Column(name: 'priority', type: Types::INTEGER, options: ['comment' => '优先级', 'default' => 0])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private int $priority = 0;
 
-
-    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[ORM\Column(name: 'valid', type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'bool')]
     private bool $valid = true;
 
     /**
@@ -75,7 +97,6 @@ class AuthenticationProvider implements Stringable
     {
         $this->id = Uuid::v7()->toRfc4122();
         $this->results = new ArrayCollection();
-        // Note: createTime and updateTime are handled by TimestampableAware trait
     }
 
     public function __toString(): string
@@ -96,7 +117,6 @@ class AuthenticationProvider implements Stringable
     public function setName(string $name): void
     {
         $this->name = $name;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function getCode(): string
@@ -107,7 +127,6 @@ class AuthenticationProvider implements Stringable
     public function setCode(string $code): void
     {
         $this->code = $code;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function getType(): ProviderType
@@ -118,18 +137,22 @@ class AuthenticationProvider implements Stringable
     public function setType(ProviderType $type): void
     {
         $this->type = $type;
-        $this->updateTime = new DateTimeImmutable();
     }
 
+    /**
+     * @return array<string>
+     */
     public function getSupportedMethods(): array
     {
         return $this->supportedMethods;
     }
 
+    /**
+     * @param array<string> $supportedMethods
+     */
     public function setSupportedMethods(array $supportedMethods): void
     {
         $this->supportedMethods = $supportedMethods;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function getApiEndpoint(): string
@@ -140,18 +163,22 @@ class AuthenticationProvider implements Stringable
     public function setApiEndpoint(string $apiEndpoint): void
     {
         $this->apiEndpoint = $apiEndpoint;
-        $this->updateTime = new DateTimeImmutable();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getConfig(): array
     {
         return $this->config;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function setConfig(array $config): void
     {
         $this->config = $config;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function isActive(): bool
@@ -162,7 +189,6 @@ class AuthenticationProvider implements Stringable
     public function setActive(bool $active): void
     {
         $this->active = $active;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function getPriority(): int
@@ -173,7 +199,6 @@ class AuthenticationProvider implements Stringable
     public function setPriority(int $priority): void
     {
         $this->priority = $priority;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     public function isValid(): bool
@@ -184,7 +209,6 @@ class AuthenticationProvider implements Stringable
     public function setValid(bool $valid): void
     {
         $this->valid = $valid;
-        $this->updateTime = new DateTimeImmutable();
     }
 
     /**
@@ -200,7 +224,7 @@ class AuthenticationProvider implements Stringable
      */
     public function supportsMethod(AuthenticationMethod $method): bool
     {
-        return in_array($method->value, $this->supportedMethods);
+        return in_array($method->value, $this->supportedMethods, true);
     }
 
     /**
@@ -217,6 +241,5 @@ class AuthenticationProvider implements Stringable
     public function setConfigValue(string $key, mixed $value): void
     {
         $this->config[$key] = $value;
-        $this->updateTime = new DateTimeImmutable();
     }
 }

@@ -2,19 +2,23 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Tests\Enum;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitEnum\AbstractEnumTestCase;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 
 /**
  * 提供商类型枚举测试
+ *
+ * @internal
  */
-class ProviderTypeTest extends TestCase
+#[CoversClass(ProviderType::class)]
+final class ProviderTypeTest extends AbstractEnumTestCase
 {
     /**
      * 测试所有提供商类型
      */
-    public function test_all_provider_types_exist(): void
+    public function testAllProviderTypesExist(): void
     {
         $expectedValues = [
             'government',
@@ -23,7 +27,7 @@ class ProviderTypeTest extends TestCase
             'third_party',
         ];
 
-        $actualValues = array_map(fn($case) => $case->value, ProviderType::cases());
+        $actualValues = array_map(fn ($case) => $case->value, ProviderType::cases());
 
         $this->assertEquals($expectedValues, $actualValues);
         $this->assertCount(4, ProviderType::cases());
@@ -32,7 +36,7 @@ class ProviderTypeTest extends TestCase
     /**
      * 测试标签获取
      */
-    public function test_get_label(): void
+    public function testGetLabel(): void
     {
         $this->assertEquals('政府部门', ProviderType::GOVERNMENT->getLabel());
         $this->assertEquals('银联', ProviderType::BANK_UNION->getLabel());
@@ -43,7 +47,7 @@ class ProviderTypeTest extends TestCase
     /**
      * 测试支持的认证方式
      */
-    public function test_get_supported_methods(): void
+    public function testGetSupportedMethods(): void
     {
         // 政府部门支持身份证二要素
         $governmentMethods = ProviderType::GOVERNMENT->getSupportedMethods();
@@ -70,7 +74,7 @@ class ProviderTypeTest extends TestCase
     /**
      * 测试枚举值创建
      */
-    public function test_enum_from_value(): void
+    public function testEnumFromValue(): void
     {
         $this->assertEquals(ProviderType::GOVERNMENT, ProviderType::from('government'));
         $this->assertEquals(ProviderType::BANK_UNION, ProviderType::from('bank_union'));
@@ -81,7 +85,7 @@ class ProviderTypeTest extends TestCase
     /**
      * 测试无效枚举值
      */
-    public function test_invalid_enum_value(): void
+    public function testInvalidEnumValue(): void
     {
         $this->expectException(\ValueError::class);
         ProviderType::from('invalid_provider_type');
@@ -90,19 +94,34 @@ class ProviderTypeTest extends TestCase
     /**
      * 测试枚举实现的接口方法
      */
-    public function test_interface_methods(): void
+    public function testInterfaceMethods(): void
     {
         $type = ProviderType::GOVERNMENT;
-        
+
         // 测试是否实现了 Labelable 接口
         $this->assertNotEmpty($type->getLabel());
-        
+
         // 测试支持方式返回值类型
         $methods = $type->getSupportedMethods();
         $this->assertNotEmpty($methods);
-        
+
         foreach ($methods as $method) {
             $this->assertInstanceOf(AuthenticationMethod::class, $method);
         }
     }
-} 
+
+    /**
+     * 测试 toArray 方法
+     */
+    public function testToArray(): void
+    {
+        $type = ProviderType::GOVERNMENT;
+        $array = $type->toArray();
+
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('value', $array);
+        $this->assertArrayHasKey('label', $array);
+        $this->assertEquals('government', $array['value']);
+        $this->assertEquals('政府部门', $array['label']);
+    }
+}

@@ -10,13 +10,13 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 /**
  * 获取支持的认证方式控制器
  */
-class GetSupportedMethodsController extends AbstractController
+final class GetSupportedMethodsController extends AbstractController
 {
     #[Route(path: '/api/auth/personal/methods', name: 'api_auth_personal_methods', methods: ['GET'])]
     public function __invoke(): JsonResponse
     {
         $methods = [];
-        
+
         foreach (AuthenticationMethod::cases() as $method) {
             if ($method->isPersonal()) {
                 $methods[] = [
@@ -29,7 +29,7 @@ class GetSupportedMethodsController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'data' => $methods
+            'data' => $methods,
         ]);
     }
 }

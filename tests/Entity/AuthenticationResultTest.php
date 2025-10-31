@@ -2,9 +2,11 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Tests\Entity;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
@@ -15,19 +17,27 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 
 /**
  * 认证结果实体测试
+ *
+ * @internal
  */
-class AuthenticationResultTest extends TestCase
+#[CoversClass(AuthenticationResult::class)]
+final class AuthenticationResultTest extends AbstractEntityTestCase
 {
     private UserInterface&MockObject $mockUser;
+
     private RealNameAuthentication $authentication;
+
     private AuthenticationProvider $provider;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->mockUser = $this->createMock(UserInterface::class);
         $this->mockUser->expects($this->any())
             ->method('getUserIdentifier')
-            ->willReturn('test_user');
+            ->willReturn('test_user')
+        ;
 
         // 创建认证记录
         $this->authentication = new RealNameAuthentication();
@@ -47,10 +57,10 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试实体创建和属性设置
      */
-    public function test_entity_creation_and_properties(): void
+    public function testEntityCreationAndProperties(): void
     {
         $result = new AuthenticationResult();
-        
+
         // 设置必需的属性避免未初始化错误
         $result->setAuthentication($this->authentication);
         $result->setProvider($this->provider);
@@ -74,7 +84,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试设置和获取认证记录
      */
-    public function test_set_and_get_authentication(): void
+    public function testSetAndGetAuthentication(): void
     {
         $result = new AuthenticationResult();
         $result->setAuthentication($this->authentication);
@@ -85,7 +95,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试设置和获取提供商
      */
-    public function test_set_and_get_provider(): void
+    public function testSetAndGetProvider(): void
     {
         $result = new AuthenticationResult();
         $result->setProvider($this->provider);
@@ -96,7 +106,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试设置和获取请求ID
      */
-    public function test_set_and_get_request_id(): void
+    public function testSetAndGetRequestId(): void
     {
         $result = new AuthenticationResult();
         $requestId = 'REQ_' . uniqid();
@@ -108,7 +118,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试成功结果
      */
-    public function test_success_result(): void
+    public function testSuccessResult(): void
     {
         $result = new AuthenticationResult();
         $result->setAuthentication($this->authentication);
@@ -137,7 +147,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试失败结果
      */
-    public function test_failure_result(): void
+    public function testFailureResult(): void
     {
         $result = new AuthenticationResult();
         $result->setAuthentication($this->authentication);
@@ -166,7 +176,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试置信度设置
      */
-    public function test_confidence_setting(): void
+    public function testConfidenceSetting(): void
     {
         $result = new AuthenticationResult();
 
@@ -191,10 +201,10 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试响应数据设置
      */
-    public function test_response_data_setting(): void
+    public function testResponseDataSetting(): void
     {
         $result = new AuthenticationResult();
-        
+
         $responseData = [
             'code' => '0000',
             'message' => 'success',
@@ -208,14 +218,19 @@ class AuthenticationResultTest extends TestCase
 
         $result->setResponseData($responseData);
         $this->assertEquals($responseData, $result->getResponseData());
-        $this->assertEquals('0000', $result->getResponseData()['code']);
-        $this->assertTrue($result->getResponseData()['data']['name_match']);
+        $fetchedData = $result->getResponseData();
+        /** @var array<string, mixed> $fetchedData */
+        $this->assertEquals('0000', $fetchedData['code']);
+        $dataSection = $fetchedData['data'];
+        $this->assertIsArray($dataSection);
+        /** @var array<string, mixed> $dataSection */
+        $this->assertTrue($dataSection['name_match']);
     }
 
     /**
      * 测试处理时间设置
      */
-    public function test_processing_time_setting(): void
+    public function testProcessingTimeSetting(): void
     {
         $result = new AuthenticationResult();
 
@@ -232,7 +247,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试错误信息设置
      */
-    public function test_error_information_setting(): void
+    public function testErrorInformationSetting(): void
     {
         $result = new AuthenticationResult();
 
@@ -253,7 +268,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试有效性设置
      */
-    public function test_validity_setting(): void
+    public function testValiditySetting(): void
     {
         $result = new AuthenticationResult();
 
@@ -270,7 +285,7 @@ class AuthenticationResultTest extends TestCase
     /**
      * 测试toString方法
      */
-    public function test_to_string(): void
+    public function testToString(): void
     {
         $result = new AuthenticationResult();
         $result->setAuthentication($this->authentication);
@@ -279,18 +294,18 @@ class AuthenticationResultTest extends TestCase
         $result->setSuccess(true);
 
         $expected = '测试提供商 - 成功 (REQ_TEST_001)';
-        $this->assertEquals($expected, (string)$result);
+        $this->assertEquals($expected, (string) $result);
 
         // 测试失败情况
         $result->setSuccess(false);
         $expected = '测试提供商 - 失败 (REQ_TEST_001)';
-        $this->assertEquals($expected, (string)$result);
+        $this->assertEquals($expected, (string) $result);
     }
 
     /**
      * 测试关联关系
      */
-    public function test_relationship_associations(): void
+    public function testRelationshipAssociations(): void
     {
         $result = new AuthenticationResult();
         $result->setAuthentication($this->authentication);
@@ -299,19 +314,52 @@ class AuthenticationResultTest extends TestCase
         // 验证关联关系
         $this->assertInstanceOf(RealNameAuthentication::class, $result->getAuthentication());
         $this->assertInstanceOf(AuthenticationProvider::class, $result->getProvider());
-        
+
         // 验证关联对象的属性
         $this->assertEquals('test_user', $result->getAuthentication()->getUserIdentifier());
         $this->assertEquals('测试提供商', $result->getProvider()->getName());
     }
 
     /**
+     * 创建被测实体的实例
+     */
+    protected function createEntity(): object
+    {
+        $entity = new AuthenticationResult();
+        $entity->setAuthentication($this->authentication);
+        $entity->setProvider($this->provider);
+        $entity->setRequestId('TEST_REQ_001');
+        $entity->setSuccess(false);
+        $entity->setProcessingTime(0);
+
+        return $entity;
+    }
+
+    /**
+     * 提供属性及其样本值的 Data Provider
+     *
+     * @return iterable<array{string, mixed}>
+     */
+    public static function propertiesProvider(): iterable
+    {
+        // 注意：由于需要复杂的 setUp，这里只测试简单属性
+        yield 'requestId' => ['requestId', 'TEST_REQ_002'];
+        yield 'success' => ['success', true];
+        yield 'confidence' => ['confidence', 0.95];
+        yield 'responseData' => ['responseData', ['code' => '0000', 'message' => 'success']];
+        yield 'errorCode' => ['errorCode', 'ERROR_CODE'];
+        yield 'errorMessage' => ['errorMessage', '错误消息'];
+        yield 'processingTime' => ['processingTime', 1000];
+        yield 'valid' => ['valid', false];
+    }
+
+    /**
      * 测试完整的认证结果场景
      */
-    public function test_complete_authentication_result_scenario(): void
+    public function testCompleteAuthenticationResultScenario(): void
     {
         $result = new AuthenticationResult();
-        
+
         // 设置完整的认证结果
         $result->setAuthentication($this->authentication);
         $result->setProvider($this->provider);
@@ -339,12 +387,16 @@ class AuthenticationResultTest extends TestCase
         $this->assertEquals(0.987, $result->getConfidence());
         $this->assertEquals(2300, $result->getProcessingTime());
         $this->assertTrue($result->isValid());
-        
+
         // 验证响应数据
         $responseData = $result->getResponseData();
+        /** @var array<string, mixed> $responseData */
         $this->assertEquals('0000', $responseData['result_code']);
         $this->assertEquals('身份认证成功', $responseData['result_message']);
-        $this->assertTrue($responseData['verification_details']['name_verified']);
+        $verificationDetails = $responseData['verification_details'];
+        $this->assertIsArray($verificationDetails);
+        /** @var array<string, mixed> $verificationDetails */
+        $this->assertTrue($verificationDetails['name_verified']);
         $this->assertEquals('GOV_REF_12345', $responseData['provider_reference']);
     }
-} 
+}

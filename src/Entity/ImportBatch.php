@@ -2,15 +2,14 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Entity;
 
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
 use Symfony\Component\Uid\Uuid;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Symfony\Component\Validator\Constraints as Assert;
+use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\RealNameAuthenticationBundle\Enum\ImportStatus;
@@ -26,71 +25,99 @@ use Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository;
     name: 'import_batch',
     options: ['comment' => '导入批次表']
 )]
-#[ORM\Index(name: 'import_batch_idx_status', columns: ['status'])]
-#[ORM\Index(name: 'import_batch_idx_create_time', columns: ['create_time'])]
-class ImportBatch implements Stringable
+class ImportBatch implements \Stringable
 {
     use TimestampableAware;
     use BlameableAware;
+    use IpTraceableAware;
+
     #[ORM\Id]
-    #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[ORM\CustomIdGenerator]
+    #[ORM\Column(name: 'id', type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[Assert\Length(max: 36)]
     private string $id;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: false, options: ['comment' => '原始文件名'])]
+    #[ORM\Column(name: 'original_file_name', type: Types::STRING, length: 255, nullable: false, options: ['comment' => '原始文件名'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private string $originalFileName;
 
-    #[ORM\Column(type: Types::STRING, length: 100, nullable: false, options: ['comment' => '文件类型'])]
+    #[ORM\Column(name: 'file_type', type: Types::STRING, length: 100, nullable: false, options: ['comment' => '文件类型'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     private string $fileType;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['comment' => '文件大小(字节)'])]
+    #[ORM\Column(name: 'file_size', type: Types::INTEGER, nullable: false, options: ['comment' => '文件大小(字节)'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThan(value: 0)]
     private int $fileSize;
 
-    #[ORM\Column(type: Types::STRING, length: 32, nullable: false, options: ['comment' => '文件MD5值'])]
+    #[ORM\Column(name: 'file_md5', type: Types::STRING, length: 32, nullable: false, options: ['comment' => '文件MD5值'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(exactly: 32)]
+    #[Assert\Regex(pattern: '/^[a-f0-9]{32}$/', message: '必须是有效的MD5值')]
     private string $fileMd5;
 
-    #[ORM\Column(type: Types::STRING, enumType: ImportStatus::class, nullable: false, options: ['comment' => '导入状态'])]
+    #[ORM\Column(name: 'status', type: Types::STRING, enumType: ImportStatus::class, nullable: false, options: ['comment' => '导入状态'])]
+    #[IndexColumn]
+    #[Assert\NotNull]
+    #[Assert\Choice(callback: [ImportStatus::class, 'cases'])]
     private ImportStatus $status;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '总记录数'])]
+    #[ORM\Column(name: 'total_records', type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '总记录数'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\PositiveOrZero]
     private int $totalRecords = 0;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '已处理记录数'])]
+    #[ORM\Column(name: 'processed_records', type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '已处理记录数'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private int $processedRecords = 0;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '成功记录数'])]
+    #[ORM\Column(name: 'success_records', type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '成功记录数'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private int $successRecords = 0;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '失败记录数'])]
+    #[ORM\Column(name: 'failed_records', type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => '失败记录数'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private int $failedRecords = 0;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始处理时间'])]
-    private ?DateTimeImmutable $startTime = null;
+    #[ORM\Column(name: 'start_time', type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始处理时间'])]
+    #[Assert\Type(type: '\DateTimeImmutable')]
+    private ?\DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '完成时间'])]
-    private ?DateTimeImmutable $finishTime = null;
+    #[ORM\Column(name: 'finish_time', type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '完成时间'])]
+    #[Assert\Type(type: '\DateTimeImmutable')]
+    private ?\DateTimeImmutable $finishTime = null;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '处理时长(秒)'])]
+    #[ORM\Column(name: 'processing_duration', type: Types::INTEGER, nullable: true, options: ['comment' => '处理时长(秒)'])]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private ?int $processingDuration = null;
 
-    #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '导入配置'])]
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(name: 'import_config', type: Types::JSON, nullable: true, options: ['comment' => '导入配置'])]
+    #[Assert\Type(type: 'array')]
     private ?array $importConfig = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '错误信息'])]
+    #[ORM\Column(name: 'error_message', type: Types::TEXT, nullable: true, options: ['comment' => '错误信息'])]
+    #[Assert\Length(max: 65535)]
     private ?string $errorMessage = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
+    #[ORM\Column(name: 'remark', type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
+    #[Assert\Length(max: 65535)]
     private ?string $remark = null;
 
-
-    #[CreateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 45, nullable: true, options: ['comment' => '创建IP'])]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 45, nullable: true, options: ['comment' => '更新IP'])]
-    private ?string $updatedFromIp = null;
-
-    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[ORM\Column(name: 'valid', type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'bool')]
     private bool $valid = true;
 
     /**
@@ -109,8 +136,8 @@ class ImportBatch implements Stringable
 
     public function __toString(): string
     {
-        return sprintf('批次 %s (%s)', 
-            $this->originalFileName, 
+        return sprintf('批次 %s (%s)',
+            $this->originalFileName,
             $this->status->getLabel()
         );
     }
@@ -128,7 +155,7 @@ class ImportBatch implements Stringable
     public function setOriginalFileName(string $originalFileName): void
     {
         $this->originalFileName = $originalFileName;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getFileType(): string
@@ -139,7 +166,7 @@ class ImportBatch implements Stringable
     public function setFileType(string $fileType): void
     {
         $this->fileType = $fileType;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getFileSize(): int
@@ -150,7 +177,7 @@ class ImportBatch implements Stringable
     public function setFileSize(int $fileSize): void
     {
         $this->fileSize = $fileSize;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getFileMd5(): string
@@ -161,7 +188,7 @@ class ImportBatch implements Stringable
     public function setFileMd5(string $fileMd5): void
     {
         $this->fileMd5 = $fileMd5;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getStatus(): ImportStatus
@@ -172,7 +199,7 @@ class ImportBatch implements Stringable
     public function setStatus(ImportStatus $status): void
     {
         $this->status = $status;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getTotalRecords(): int
@@ -183,7 +210,7 @@ class ImportBatch implements Stringable
     public function setTotalRecords(int $totalRecords): void
     {
         $this->totalRecords = $totalRecords;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getProcessedRecords(): int
@@ -194,7 +221,7 @@ class ImportBatch implements Stringable
     public function setProcessedRecords(int $processedRecords): void
     {
         $this->processedRecords = $processedRecords;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getSuccessRecords(): int
@@ -205,7 +232,7 @@ class ImportBatch implements Stringable
     public function setSuccessRecords(int $successRecords): void
     {
         $this->successRecords = $successRecords;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getFailedRecords(): int
@@ -216,29 +243,29 @@ class ImportBatch implements Stringable
     public function setFailedRecords(int $failedRecords): void
     {
         $this->failedRecords = $failedRecords;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
-    public function getStartTime(): ?DateTimeImmutable
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
-    public function setStartTime(?DateTimeImmutable $startTime): void
+    public function setStartTime(?\DateTimeImmutable $startTime): void
     {
         $this->startTime = $startTime;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
-    public function getFinishTime(): ?DateTimeImmutable
+    public function getFinishTime(): ?\DateTimeImmutable
     {
         return $this->finishTime;
     }
 
-    public function setFinishTime(?DateTimeImmutable $finishTime): void
+    public function setFinishTime(?\DateTimeImmutable $finishTime): void
     {
         $this->finishTime = $finishTime;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getProcessingDuration(): ?int
@@ -249,18 +276,24 @@ class ImportBatch implements Stringable
     public function setProcessingDuration(?int $processingDuration): void
     {
         $this->processingDuration = $processingDuration;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getImportConfig(): ?array
     {
         return $this->importConfig;
     }
 
+    /**
+     * @param array<string, mixed>|null $importConfig
+     */
     public function setImportConfig(?array $importConfig): void
     {
         $this->importConfig = $importConfig;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getErrorMessage(): ?string
@@ -271,7 +304,7 @@ class ImportBatch implements Stringable
     public function setErrorMessage(?string $errorMessage): void
     {
         $this->errorMessage = $errorMessage;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     public function getRemark(): ?string
@@ -285,26 +318,6 @@ class ImportBatch implements Stringable
         // Note: updateTime is handled by TimestampableAware trait automatically
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): void
-    {
-        $this->createdFromIp = $createdFromIp;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): void
-    {
-        $this->updatedFromIp = $updatedFromIp;
-    }
-
     public function isValid(): bool
     {
         return $this->valid;
@@ -313,7 +326,7 @@ class ImportBatch implements Stringable
     public function setValid(bool $valid): void
     {
         $this->valid = $valid;
-        $this->updateTime = new DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     /**
@@ -329,10 +342,10 @@ class ImportBatch implements Stringable
      */
     public function getProgressPercentage(): float
     {
-        if ($this->totalRecords === 0) {
+        if (0 === $this->totalRecords) {
             return 0.0;
         }
-        
+
         return round(($this->processedRecords / $this->totalRecords) * 100, 2);
     }
 
@@ -342,12 +355,12 @@ class ImportBatch implements Stringable
     public function updateStatistics(): void
     {
         $this->processedRecords = $this->successRecords + $this->failedRecords;
-        
-        if ($this->startTime !== null && $this->finishTime !== null) {
+
+        if (null !== $this->startTime && null !== $this->finishTime) {
             $this->processingDuration = $this->finishTime->getTimestamp() - $this->startTime->getTimestamp();
         }
-        
-        $this->updateTime = new DateTimeImmutable();
+
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     /**
@@ -356,8 +369,8 @@ class ImportBatch implements Stringable
     public function startProcessing(): void
     {
         $this->status = ImportStatus::PROCESSING;
-        $this->startTime = new DateTimeImmutable();
-        $this->updateTime = new DateTimeImmutable();
+        $this->startTime = new \DateTimeImmutable();
+        $this->updateTime = new \DateTimeImmutable();
     }
 
     /**
@@ -366,7 +379,7 @@ class ImportBatch implements Stringable
     public function finishProcessing(): void
     {
         $this->status = ImportStatus::COMPLETED;
-        $this->finishTime = new DateTimeImmutable();
+        $this->finishTime = new \DateTimeImmutable();
         $this->updateStatistics();
     }
 
@@ -377,7 +390,7 @@ class ImportBatch implements Stringable
     {
         $this->status = ImportStatus::FAILED;
         $this->errorMessage = $errorMessage;
-        $this->finishTime = new DateTimeImmutable();
+        $this->finishTime = new \DateTimeImmutable();
         $this->updateStatistics();
     }
 
@@ -386,7 +399,7 @@ class ImportBatch implements Stringable
      */
     public function isCompleted(): bool
     {
-        return $this->status === ImportStatus::COMPLETED;
+        return ImportStatus::COMPLETED === $this->status;
     }
 
     /**
@@ -394,7 +407,7 @@ class ImportBatch implements Stringable
      */
     public function isFailed(): bool
     {
-        return $this->status === ImportStatus::FAILED;
+        return ImportStatus::FAILED === $this->status;
     }
 
     /**
@@ -402,7 +415,7 @@ class ImportBatch implements Stringable
      */
     public function isProcessing(): bool
     {
-        return $this->status === ImportStatus::PROCESSING;
+        return ImportStatus::PROCESSING === $this->status;
     }
 
     /**
@@ -410,10 +423,10 @@ class ImportBatch implements Stringable
      */
     public function getSuccessRate(): float
     {
-        if ($this->processedRecords === 0) {
+        if (0 === $this->processedRecords) {
             return 0.0;
         }
-        
+
         return round(($this->successRecords / $this->processedRecords) * 100, 2);
     }
-} 
+}

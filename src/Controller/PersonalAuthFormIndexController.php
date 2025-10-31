@@ -10,7 +10,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 /**
  * 个人认证方式选择页面控制器
  */
-class PersonalAuthFormIndexController extends AbstractController
+final class PersonalAuthFormIndexController extends AbstractController
 {
     #[Route(path: '/auth/personal', name: 'auth_personal_index')]
     public function __invoke(): Response

@@ -2,20 +2,36 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Service;
 
+use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
 use Symfony\Component\Config\Loader\Loader;
-use Symfony\Component\Routing\Loader\AnnotationClassLoader;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Routing\RouteCollection;
+use Tourze\RealNameAuthenticationBundle\Controller\Admin\ReviewStatisticsIndexController;
+use Tourze\RealNameAuthenticationBundle\Controller\Admin\ReviewStatisticsPendingController;
+use Tourze\RealNameAuthenticationBundle\Controller\Api\CheckAuthStatusController;
+use Tourze\RealNameAuthenticationBundle\Controller\Api\GetAuthHistoryController;
+use Tourze\RealNameAuthenticationBundle\Controller\Api\GetSupportedMethodsController;
+use Tourze\RealNameAuthenticationBundle\Controller\Api\SubmitPersonalAuthController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormBankCardFourController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormBankCardThreeController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormCarrierThreeController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormHistoryController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormIdCardTwoController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormIndexController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormLivenessController;
+use Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormStatusController;
+use Tourze\RoutingAutoLoaderBundle\Service\RoutingAutoLoaderInterface;
 
 /**
  * 控制器路由加载器
  *
  * 加载所有控制器的路由配置
  */
-class AttributeControllerLoader extends Loader
+#[AutoconfigureTag(name: 'routing.loader')]
+class AttributeControllerLoader extends Loader implements RoutingAutoLoaderInterface
 {
-    public function __construct(
-        private readonly AnnotationClassLoader $controllerLoader
-    ) {
+    public function __construct(private AttributeRouteControllerLoader $controllerLoader)
+    {
         parent::__construct();
     }
 
@@ -24,35 +40,35 @@ class AttributeControllerLoader extends Loader
         $collection = new RouteCollection();
 
         // Admin Controllers
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Admin\ReviewStatisticsIndexController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Admin\ReviewStatisticsPendingController::class));
-        
+        $collection->addCollection($this->controllerLoader->load(ReviewStatisticsIndexController::class));
+        $collection->addCollection($this->controllerLoader->load(ReviewStatisticsPendingController::class));
+
         // API Controllers
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Api\CheckAuthStatusController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Api\GetAuthHistoryController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Api\GetSupportedMethodsController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\Api\SubmitPersonalAuthController::class));
-        
+        $collection->addCollection($this->controllerLoader->load(CheckAuthStatusController::class));
+        $collection->addCollection($this->controllerLoader->load(GetAuthHistoryController::class));
+        $collection->addCollection($this->controllerLoader->load(GetSupportedMethodsController::class));
+        $collection->addCollection($this->controllerLoader->load(SubmitPersonalAuthController::class));
+
         // Form Controllers
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormIndexController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormIdCardTwoController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormCarrierThreeController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormBankCardThreeController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormBankCardFourController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormLivenessController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormStatusController::class));
-        $collection->addCollection($this->controllerLoader->load(\Tourze\RealNameAuthenticationBundle\Controller\PersonalAuthFormHistoryController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormIndexController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormIdCardTwoController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormCarrierThreeController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormBankCardThreeController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormBankCardFourController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormLivenessController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormStatusController::class));
+        $collection->addCollection($this->controllerLoader->load(PersonalAuthFormHistoryController::class));
 
         return $collection;
     }
 
-    public function load($resource, ?string $type = null): RouteCollection
+    public function load(mixed $resource, ?string $type = null): RouteCollection
     {
         return $this->autoload();
     }
 
-    public function supports($resource, ?string $type = null): bool
+    public function supports(mixed $resource, ?string $type = null): bool
     {
-        return 'real_name_authentication' === $type;
+        return false;
     }
 }

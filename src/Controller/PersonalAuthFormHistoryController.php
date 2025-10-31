@@ -10,10 +10,10 @@ use Tourze\RealNameAuthenticationBundle\Service\PersonalAuthenticationService;
 /**
  * 认证历史页面控制器
  */
-class PersonalAuthFormHistoryController extends AbstractController
+final class PersonalAuthFormHistoryController extends AbstractController
 {
     public function __construct(
-        private readonly PersonalAuthenticationService $personalAuthService
+        private readonly PersonalAuthenticationService $personalAuthService,
     ) {
     }
 
@@ -21,20 +21,22 @@ class PersonalAuthFormHistoryController extends AbstractController
     public function __invoke(): Response
     {
         $user = $this->getUser();
-        if ($user === null) {
+        if (null === $user) {
             $this->addFlash('danger', '请先登录');
+
             return $this->redirectToRoute('auth_personal_index');
         }
 
         try {
             $authentications = $this->personalAuthService->getAuthenticationHistory($user);
-            
+
             return $this->render('@RealNameAuthentication/personal_auth/history.html.twig', [
                 'authentications' => $authentications,
                 'user' => $user,
             ]);
         } catch (\Throwable $e) {
             $this->addFlash('danger', '查询认证历史失败');
+
             return $this->redirectToRoute('auth_personal_index');
         }
     }

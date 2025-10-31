@@ -1,0 +1,277 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Controller\\Api\\SubmitPersonalAuthController\:\:parseRequestData\(\) should return array\<string, mixed\>\|Symfony\\Component\\HttpFoundation\\JsonResponse but returns array\<mixed, mixed\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Api/SubmitPersonalAuthController.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findActiveByType\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findActiveProviders\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findBestProviderForMethod\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findByCode\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findByCodeAndActive\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findByMethod\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findByPriority\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findByTypeAndMethod\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationProviderRepository\:\:findEnabledProviders\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationProvider\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationProviderRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByAuthentication\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByConfidenceRange\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByProvider\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByRequestId\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByUser\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findByUserAndMethod\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findFailedResults\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findLatestByUser\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findSlowResults\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findSuccessfulResults\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\AuthenticationResultRepository\:\:findWithPagination\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\AuthenticationResult\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/AuthenticationResultRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findByStatus\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findByUser\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findDuplicateFiles\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findOldBatches\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findRecentBatches\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportBatchRepository\:\:findStuckBatches\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportBatch\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportBatchRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:deleteByBatch\(\) should return int but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByBatch\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByBatchAndRowNumber\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByBatchAndStatus\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByBatchWithPagination\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByErrorPattern\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findByStatus\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findRecentErrors\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\ImportRecordRepository\:\:findSlowestRecords\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\ImportRecord\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/ImportRecordRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByStatus\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByUser\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByUserAndStatus\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByUserAndStatusWithLimit\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByUserAndType\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findByUserIdentifier\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findExpiredAuthentications\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findLatestByUser\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findValidByUserAndType\(\) should return Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php
+
+		-
+			message: '#^Method Tourze\\RealNameAuthenticationBundle\\Repository\\RealNameAuthenticationRepository\:\:findWithPagination\(\) should return array\<Tourze\\RealNameAuthenticationBundle\\Entity\\RealNameAuthentication\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RealNameAuthenticationRepository.php

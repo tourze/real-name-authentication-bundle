@@ -1,0 +1,48 @@
+{% extends '@RealNameAuthentication/base.html.twig' %}
+
+{% block content %}
+    <div class="container">
+        <h1>待审核实名认证列表</h1>
+        
+        {% if authentications is empty %}
+            <div class="alert alert-info">
+                暂无待审核的实名认证申请
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>认证类型</th>
+                            <th>认证方式</th>
+                            <th>提交时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for auth in authentications %}
+                            <tr>
+                                <td>{{ auth.id }}</td>
+                                <td>{{ auth.user.username }}</td>
+                                <td>{{ auth.type.label }}</td>
+                                <td>{{ auth.method.label }}</td>
+                                <td>{{ auth.createTime|date('Y-m-d H:i:s') }}</td>
+                                <td>
+                                    <a href="{{ path('admin_authentication_result_detail', {id: auth.id}) }}" class="btn btn-sm btn-primary">
+                                        查看
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-3">
+                <small class="text-muted">共 {{ total_count }} 条记录</small>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

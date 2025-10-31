@@ -17,7 +17,6 @@ enum AuthenticationMethod: string implements Labelable, Itemable, Selectable
     use ItemTrait;
     use SelectTrait;
 
-    // 个人认证方式
     case ID_CARD_TWO_ELEMENTS = 'id_card_two_elements';
     case CARRIER_THREE_ELEMENTS = 'carrier_three_elements';
     case BANK_CARD_THREE_ELEMENTS = 'bank_card_three_elements';
@@ -36,7 +35,9 @@ enum AuthenticationMethod: string implements Labelable, Itemable, Selectable
     }
 
     /**
-     * 获取认证所需字段
+     * 获取认证方式所需的字段
+     *
+     * @return array<int, string>
      */
     public function getRequiredFields(): array
     {
@@ -54,12 +55,6 @@ enum AuthenticationMethod: string implements Labelable, Itemable, Selectable
      */
     public function isPersonal(): bool
     {
-        return in_array($this, [
-            self::ID_CARD_TWO_ELEMENTS,
-            self::CARRIER_THREE_ELEMENTS,
-            self::BANK_CARD_THREE_ELEMENTS,
-            self::BANK_CARD_FOUR_ELEMENTS,
-            self::LIVENESS_DETECTION,
-        ]);
+        return true;
     }
 }

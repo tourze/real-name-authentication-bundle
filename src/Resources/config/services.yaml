@@ -5,31 +5,12 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
     public: false
 
+  # Alias the routing loader attribute service
+  Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader: '@routing.loader.attribute'
+
   Tourze\RealNameAuthenticationBundle\Controller\:
     resource: '../../Controller/'
-  Tourze\RealNameAuthenticationBundle\DataFixtures\:
-    resource: '../../DataFixtures/'
   Tourze\RealNameAuthenticationBundle\Repository\:
     resource: '../../Repository/'
   Tourze\RealNameAuthenticationBundle\Service\:
     resource: '../../Service/'
-
-  # Make services public for testing
-  Tourze\RealNameAuthenticationBundle\Service\AuthenticationProviderService:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Service\PersonalAuthenticationService:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Service\ManualReviewService:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Service\BatchImportService:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderRepository:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepository:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationRepository:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Repository\ImportRecordRepository:
-    public: '%kernel.debug%'
-  Tourze\RealNameAuthenticationBundle\Repository\ImportBatchRepository:
-    public: '%kernel.debug%'

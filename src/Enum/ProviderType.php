@@ -34,6 +34,7 @@ enum ProviderType: string implements Labelable, Itemable, Selectable
 
     /**
      * 获取支持的认证方式
+     * @return array<int, AuthenticationMethod>
      */
     public function getSupportedMethods(): array
     {
@@ -54,4 +55,3 @@ enum ProviderType: string implements Labelable, Itemable, Selectable
         };
     }
 }
- 

@@ -4,6 +4,7 @@ namespace Tourze\RealNameAuthenticationBundle\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
@@ -13,6 +14,8 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
  *
  * 创建各种类型的认证服务提供商，用于测试和演示
  */
+#[When(env: 'test')]
+#[When(env: 'dev')]
 class AuthenticationProviderFixtures extends Fixture
 {
     // 提供商引用常量
@@ -30,15 +33,15 @@ class AuthenticationProviderFixtures extends Fixture
         $governmentProvider->setCode('gov_police_auth');
         $governmentProvider->setType(ProviderType::GOVERNMENT);
         $governmentProvider->setSupportedMethods([
-                AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
+            AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
         ]);
         $governmentProvider->setApiEndpoint('https://api.police.gov.cn/auth');
         $governmentProvider->setConfig([
-                'app_id' => 'GOV_APP_12345',
-                'app_secret' => 'GOV_SECRET_ABCDEF',
-                'timeout' => 10,
-                'retry_count' => 3,
-                'sandbox_mode' => true,
+            'app_id' => 'GOV_APP_12345',
+            'app_secret' => 'GOV_SECRET_ABCDEF',
+            'timeout' => 10,
+            'retry_count' => 3,
+            'sandbox_mode' => true,
         ]);
         $governmentProvider->setPriority(100);
         $manager->persist($governmentProvider);
@@ -50,18 +53,18 @@ class AuthenticationProviderFixtures extends Fixture
         $bankUnionProvider->setCode('unionpay_auth');
         $bankUnionProvider->setType(ProviderType::BANK_UNION);
         $bankUnionProvider->setSupportedMethods([
-                AuthenticationMethod::BANK_CARD_THREE_ELEMENTS->value,
-                AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS->value,
+            AuthenticationMethod::BANK_CARD_THREE_ELEMENTS->value,
+            AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS->value,
         ]);
         $bankUnionProvider->setApiEndpoint('https://api.unionpay.com/auth');
         $bankUnionProvider->setConfig([
-                'merchant_id' => 'UNIONPAY_MERCHANT_001',
-                'certificate_path' => '/path/to/unionpay.cer',
-                'private_key_path' => '/path/to/private.key',
-                'version' => '1.0.0',
-                'charset' => 'UTF-8',
-                'sign_method' => 'RSA',
-                'sandbox_mode' => true,
+            'merchant_id' => 'UNIONPAY_MERCHANT_001',
+            'certificate_path' => '/path/to/unionpay.cer',
+            'private_key_path' => '/path/to/private.key',
+            'version' => '1.0.0',
+            'charset' => 'UTF-8',
+            'sign_method' => 'RSA',
+            'sandbox_mode' => true,
         ]);
         $bankUnionProvider->setPriority(95);
         $manager->persist($bankUnionProvider);
@@ -73,16 +76,16 @@ class AuthenticationProviderFixtures extends Fixture
         $carrierProvider->setCode('cmcc_auth');
         $carrierProvider->setType(ProviderType::CARRIER);
         $carrierProvider->setSupportedMethods([
-                AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
+            AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
         ]);
         $carrierProvider->setApiEndpoint('https://api.10086.cn/auth');
         $carrierProvider->setConfig([
-                'app_key' => 'CMCC_APP_KEY_12345',
-                'app_secret' => 'CMCC_SECRET_ABCDEF',
-                'version' => '2.0',
-                'format' => 'json',
-                'sign_method' => 'HMAC-SHA256',
-                'sandbox_mode' => true,
+            'app_key' => 'CMCC_APP_KEY_12345',
+            'app_secret' => 'CMCC_SECRET_ABCDEF',
+            'version' => '2.0',
+            'format' => 'json',
+            'sign_method' => 'HMAC-SHA256',
+            'sandbox_mode' => true,
         ]);
         $carrierProvider->setPriority(90);
         $manager->persist($carrierProvider);
@@ -94,16 +97,16 @@ class AuthenticationProviderFixtures extends Fixture
         $thirdPartyProvider->setCode('aliyun_face_auth');
         $thirdPartyProvider->setType(ProviderType::THIRD_PARTY);
         $thirdPartyProvider->setSupportedMethods([
-                AuthenticationMethod::LIVENESS_DETECTION->value,
+            AuthenticationMethod::LIVENESS_DETECTION->value,
         ]);
         $thirdPartyProvider->setApiEndpoint('https://facebody.cn-shanghai.aliyuncs.com');
         $thirdPartyProvider->setConfig([
-                'access_key_id' => 'ALI_ACCESS_KEY_ID',
-                'access_key_secret' => 'ALI_ACCESS_KEY_SECRET',
-                'region_id' => 'cn-shanghai',
-                'version' => '2019-12-30',
-                'confidence_threshold' => 0.8,
-                'sandbox_mode' => true,
+            'access_key_id' => 'ALI_ACCESS_KEY_ID',
+            'access_key_secret' => 'ALI_ACCESS_KEY_SECRET',
+            'region_id' => 'cn-shanghai',
+            'version' => '2019-12-30',
+            'confidence_threshold' => 0.8,
+            'sandbox_mode' => true,
         ]);
         $thirdPartyProvider->setPriority(85);
         $manager->persist($thirdPartyProvider);
@@ -115,19 +118,19 @@ class AuthenticationProviderFixtures extends Fixture
         $backupProvider->setCode('tencent_cloud_auth');
         $backupProvider->setType(ProviderType::THIRD_PARTY);
         $backupProvider->setSupportedMethods([
-                AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
-                AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
-                AuthenticationMethod::BANK_CARD_THREE_ELEMENTS->value,
-                AuthenticationMethod::LIVENESS_DETECTION->value,
+            AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
+            AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
+            AuthenticationMethod::BANK_CARD_THREE_ELEMENTS->value,
+            AuthenticationMethod::LIVENESS_DETECTION->value,
         ]);
         $backupProvider->setApiEndpoint('https://faceid.tencentcloudapi.com');
         $backupProvider->setConfig([
-                'secret_id' => 'TENCENT_SECRET_ID',
-                'secret_key' => 'TENCENT_SECRET_KEY',
-                'region' => 'ap-beijing',
-                'version' => '2018-03-01',
-                'endpoint' => 'faceid.tencentcloudapi.com',
-                'sandbox_mode' => true,
+            'secret_id' => 'TENCENT_SECRET_ID',
+            'secret_key' => 'TENCENT_SECRET_KEY',
+            'region' => 'ap-beijing',
+            'version' => '2018-03-01',
+            'endpoint' => 'faceid.tencentcloudapi.com',
+            'sandbox_mode' => true,
         ]);
         $backupProvider->setPriority(80);
         $manager->persist($backupProvider);
@@ -139,11 +142,11 @@ class AuthenticationProviderFixtures extends Fixture
         $disabledProvider->setCode('disabled_test_provider');
         $disabledProvider->setType(ProviderType::THIRD_PARTY);
         $disabledProvider->setSupportedMethods([
-                AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
+            AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
         ]);
-        $disabledProvider->setApiEndpoint('https://api.disabled.example.com');
+        $disabledProvider->setApiEndpoint('https://images.unsplash.com');
         $disabledProvider->setConfig([
-                'test_mode' => true,
+            'test_mode' => true,
         ]);
         $disabledProvider->setPriority(0);
         $disabledProvider->setActive(false);
@@ -155,16 +158,16 @@ class AuthenticationProviderFixtures extends Fixture
         $bankDirectProvider->setCode('icbc_direct_auth');
         $bankDirectProvider->setType(ProviderType::BANK_UNION);
         $bankDirectProvider->setSupportedMethods([
-                AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS->value,
+            AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS->value,
         ]);
         $bankDirectProvider->setApiEndpoint('https://api.icbc.com.cn/auth');
         $bankDirectProvider->setConfig([
-                'bank_code' => 'ICBC',
-                'merchant_no' => 'ICBC_MERCHANT_001',
-                'cert_file' => '/path/to/icbc.cer',
-                'key_file' => '/path/to/icbc.key',
-                'encryption' => 'RSA2048',
-                'sandbox_mode' => true,
+            'bank_code' => 'ICBC',
+            'merchant_no' => 'ICBC_MERCHANT_001',
+            'cert_file' => '/path/to/icbc.cer',
+            'key_file' => '/path/to/icbc.key',
+            'encryption' => 'RSA2048',
+            'sandbox_mode' => true,
         ]);
         $bankDirectProvider->setPriority(88);
         $manager->persist($bankDirectProvider);
@@ -175,16 +178,16 @@ class AuthenticationProviderFixtures extends Fixture
         $unicomProvider->setCode('unicom_auth');
         $unicomProvider->setType(ProviderType::CARRIER);
         $unicomProvider->setSupportedMethods([
-                AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
+            AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
         ]);
         $unicomProvider->setApiEndpoint('https://api.10010.com/auth');
         $unicomProvider->setConfig([
-                'partner_id' => 'UNICOM_PARTNER_001',
-                'partner_key' => 'UNICOM_KEY_ABCDEF',
-                'version' => '1.0',
-                'charset' => 'UTF-8',
-                'sign_type' => 'MD5',
-                'sandbox_mode' => true,
+            'partner_id' => 'UNICOM_PARTNER_001',
+            'partner_key' => 'UNICOM_KEY_ABCDEF',
+            'version' => '1.0',
+            'charset' => 'UTF-8',
+            'sign_type' => 'MD5',
+            'sandbox_mode' => true,
         ]);
         $unicomProvider->setPriority(88);
         $manager->persist($unicomProvider);

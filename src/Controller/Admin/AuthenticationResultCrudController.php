@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Controller\Admin;
 
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminCrud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -27,8 +28,11 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 
 /**
  * 认证结果CRUD控制器
+ *
+ * @extends AbstractCrudController<AuthenticationResult>
  */
-class AuthenticationResultCrudController extends AbstractCrudController
+#[AdminCrud(routePath: '/real-name-auth/result', routeName: 'real_name_auth_result')]
+final class AuthenticationResultCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -47,14 +51,16 @@ class AuthenticationResultCrudController extends AbstractCrudController
             ->setHelp('index', '查看和管理所有认证结果记录')
             ->setDefaultSort(['createTime' => 'DESC'])
             ->setSearchFields(['requestId', 'errorCode', 'errorMessage'])
-            ->setPaginatorPageSize(30);
+            ->setPaginatorPageSize(30)
+        ;
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id', 'ID')
             ->setMaxLength(9999)
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield AssociationField::new('authentication', '认证记录')
             ->setFormTypeOptions([
@@ -64,64 +70,77 @@ class AuthenticationResultCrudController extends AbstractCrudController
                         $auth->getMethod()->getLabel(),
                         $auth->getStatus()->getLabel()
                     );
-                }
+                },
             ])
             ->formatValue(function ($value) {
                 if ($value instanceof RealNameAuthentication) {
                     return sprintf('%s - %s', $value->getUser()->getUserIdentifier(), $value->getMethod()->getLabel());
                 }
+
                 return '';
-            });
+            })
+        ;
 
         yield AssociationField::new('provider', '认证提供商')
             ->setFormTypeOptions([
-                'choice_label' => 'name'
+                'choice_label' => 'name',
             ])
             ->formatValue(function ($value) {
                 return $value instanceof AuthenticationProvider ? $value->getName() : '';
-            });
+            })
+        ;
 
         yield TextField::new('requestId', '请求ID')
-            ->setMaxLength(30);
+            ->setMaxLength(30)
+        ;
 
         yield BooleanField::new('isSuccess', '是否成功')
-            ->renderAsSwitch(false);
+            ->renderAsSwitch(false)
+        ;
 
         yield NumberField::new('confidence', '置信度')
             ->setNumDecimals(3)
             ->hideOnIndex()
-            ->setHelp('0-1之间的数值，表示认证结果的可信度');
+            ->setHelp('0-1之间的数值，表示认证结果的可信度')
+        ;
 
         yield ArrayField::new('responseData', '响应数据')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('errorCode', '错误代码')
-            ->hideOnIndex();
+            ->hideOnIndex()
+        ;
 
         yield TextareaField::new('errorMessage', '错误消息')
             ->hideOnIndex()
-            ->setNumOfRows(3);
+            ->setNumOfRows(3)
+        ;
 
         yield IntegerField::new('processingTime', '处理时间(ms)')
-            ->setHelp('认证处理耗时，单位毫秒');
+            ->setHelp('认证处理耗时，单位毫秒')
+        ;
 
         yield DateTimeField::new('createTime', '创建时间')
             ->hideOnForm()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
 
         yield BooleanField::new('valid', '是否有效')
-            ->renderAsSwitch(false);
+            ->renderAsSwitch(false)
+        ;
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, Action::EDIT, Action::DELETE])
             ->disable(Action::NEW) // 禁用新建功能，认证结果由系统生成
             ->disable(Action::DELETE) // 禁用删除功能，只能设置无效
-            ->disable(Action::EDIT); // 禁用编辑功能，认证结果不可修改
+            ->disable(Action::EDIT) // 禁用编辑功能，认证结果不可修改
+            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL])
+        ;
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -135,6 +154,7 @@ class AuthenticationResultCrudController extends AbstractCrudController
             ->add(NumericFilter::new('confidence', '置信度'))
             ->add(NumericFilter::new('processingTime', '处理时间'))
             ->add(BooleanFilter::new('valid', '是否有效'))
-            ->add(DateTimeFilter::new('createTime', '创建时间'));
+            ->add(DateTimeFilter::new('createTime', '创建时间'))
+        ;
     }
 }

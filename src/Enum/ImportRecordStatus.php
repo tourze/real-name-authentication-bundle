@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Enum;
 
+use Tourze\EnumExtra\BadgeInterface;
 use Tourze\EnumExtra\Itemable;
 use Tourze\EnumExtra\ItemTrait;
 use Tourze\EnumExtra\Labelable;
@@ -13,7 +14,7 @@ use Tourze\EnumExtra\SelectTrait;
  *
  * 表示单条导入记录的处理状态
  */
-enum ImportRecordStatus: string implements Labelable, Itemable, Selectable
+enum ImportRecordStatus: string implements Labelable, Itemable, Selectable, BadgeInterface
 {
     use ItemTrait;
     use SelectTrait;
@@ -27,8 +28,8 @@ enum ImportRecordStatus: string implements Labelable, Itemable, Selectable
     {
         return match ($this) {
             self::PENDING => '等待处理',
-            self::SUCCESS => '处理成功',
-            self::FAILED => '处理失败',
+            self::SUCCESS => '成功',
+            self::FAILED => '失败',
             self::SKIPPED => '已跳过',
         };
     }
@@ -38,32 +39,19 @@ enum ImportRecordStatus: string implements Labelable, Itemable, Selectable
      */
     public function isFinal(): bool
     {
-        return in_array($this, [self::SUCCESS, self::FAILED, self::SKIPPED]);
-    }
-
-    /**
-     * 获取状态对应的CSS颜色类
-     */
-    public function getCssClass(): string
-    {
         return match ($this) {
-            self::PENDING => 'warning',
-            self::SUCCESS => 'success',
-            self::FAILED => 'danger',
-            self::SKIPPED => 'secondary',
+            self::PENDING => false,
+            self::SUCCESS, self::FAILED, self::SKIPPED => true,
         };
     }
 
-    /**
-     * 获取状态对应的图标
-     */
-    public function getIcon(): string
+    public function getBadge(): string
     {
         return match ($this) {
-            self::PENDING => 'fas fa-clock',
-            self::SUCCESS => 'fas fa-check',
-            self::FAILED => 'fas fa-times',
-            self::SKIPPED => 'fas fa-forward',
+            self::PENDING => BadgeInterface::WARNING,
+            self::SUCCESS => BadgeInterface::SUCCESS,
+            self::FAILED => BadgeInterface::DANGER,
+            self::SKIPPED => BadgeInterface::SECONDARY,
         };
     }
-} 
+}

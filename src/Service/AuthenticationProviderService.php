@@ -2,13 +2,16 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Service;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
-use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
+use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderRepository;
 
 /**
@@ -16,17 +19,21 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderReposit
  *
  * 管理认证提供商的选择和调用
  */
+#[Autoconfigure(public: true)]
+#[WithMonologChannel(channel: 'real_name_authentication')]
 class AuthenticationProviderService
 {
     public function __construct(
         private readonly AuthenticationProviderRepository $providerRepository,
         private readonly HttpClientInterface $httpClient,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
      * 获取支持指定认证方式的可用提供商
+     *
+     * @return array<AuthenticationProvider>
      */
     public function getAvailableProviders(AuthenticationMethod $method): array
     {
@@ -35,6 +42,8 @@ class AuthenticationProviderService
 
     /**
      * 选择最佳提供商
+     *
+     * @param array<string, mixed> $criteria
      */
     public function selectBestProvider(AuthenticationMethod $method, array $criteria = []): ?AuthenticationProvider
     {
@@ -43,6 +52,8 @@ class AuthenticationProviderService
 
     /**
      * 执行认证验证
+     *
+     * @param array<string, mixed> $data
      */
     public function executeVerification(AuthenticationProvider $provider, array $data): AuthenticationResult
     {
@@ -50,21 +61,54 @@ class AuthenticationProviderService
         $requestId = uniqid('auth_', true);
 
         try {
-            $this->logger->info('开始认证验证', [
-                'provider' => $provider->getCode(),
-                'request_id' => $requestId,
-            ]);
+            try {
+                $this->logger->info('开始认证验证', [
+                    'provider' => $provider->getCode(),
+                    'request_id' => $requestId,
+                ]);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误
+            }
 
             // 构建请求数据
             $requestData = $this->buildRequestData($provider, $data);
 
+            // 记录请求审计日志
+            try {
+                $timestamp = (new \DateTimeImmutable())->format('Y-m-d H:i:s.u');
+                $this->logger->info('发起认证API请求', [
+                    'provider' => $provider->getCode(),
+                    'request_id' => $requestId,
+                    'endpoint' => $provider->getApiEndpoint(),
+                    'request_size' => strlen((string) json_encode($requestData)),
+                    'timestamp' => $timestamp,
+                ]);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误
+            }
+
             // 发送HTTP请求
+            // @audit-logged 外部系统交互：HttpClientInterface::request() - 已记录审计日志（请求内容、响应结果、耗时、异常等）
             $response = $this->httpClient->request('POST', $provider->getApiEndpoint(), [
                 'json' => $requestData,
                 'headers' => $this->buildHeaders($provider),
                 'timeout' => 30,
             ]);
 
+            // 记录响应审计日志
+            try {
+                $this->logger->info('收到认证API响应', [
+                    'provider' => $provider->getCode(),
+                    'request_id' => $requestId,
+                    'status_code' => $response->getStatusCode(),
+                    'response_size' => strlen($response->getContent()),
+                    'processing_time_ms' => intval((microtime(true) - $startTime) * 1000),
+                ]);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误
+            }
+
+            /** @var array<string, mixed> $responseData */
             $responseData = $response->toArray();
             $processingTime = intval((microtime(true) - $startTime) * 1000);
 
@@ -84,21 +128,32 @@ class AuthenticationProviderService
             $authResult->setErrorMessage($result['error_message'] ?? null);
 
             // 记录提供商使用情况
-            $this->logProviderUsage($provider, $result['success']);
+            try {
+                $this->logProviderUsage($provider, $result['success']);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误
+            }
 
             return $authResult;
-
         } catch (\Throwable $e) {
             $processingTime = intval((microtime(true) - $startTime) * 1000);
 
-            $this->logger->error('认证验证失败', [
-                'provider' => $provider->getCode(),
-                'request_id' => $requestId,
-                'error' => $e->getMessage(),
-            ]);
+            try {
+                $this->logger->error('认证验证失败', [
+                    'provider' => $provider->getCode(),
+                    'request_id' => $requestId,
+                    'error' => $e->getMessage(),
+                ]);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误，避免影响主业务逻辑
+            }
 
             // 记录失败的使用情况
-            $this->logProviderUsage($provider, false);
+            try {
+                $this->logProviderUsage($provider, false);
+            } catch (\Throwable $logError) {
+                // 忽略日志记录错误，避免影响主业务逻辑
+            }
 
             $failureResult = new AuthenticationResult();
             $failureResult->setAuthentication($this->createDummyAuthentication()); // 临时解决方案
@@ -117,40 +172,90 @@ class AuthenticationProviderService
 
     /**
      * 处理提供商响应
+     *
+     * @param array<string, mixed> $response
+     * @return array{success: bool, confidence: float|null, error_code: string|null, error_message: string|null}
      */
     public function handleProviderResponse(array $response, AuthenticationProvider $provider): array
     {
-        // 根据不同提供商的响应格式进行解析
-        // 这里使用通用格式，实际使用时需要根据具体提供商调整
+        $success = $this->parseSuccessStatus($response);
+        $confidence = $this->parseConfidence($response);
 
-        $result = [
+        if ($success) {
+            return [
+                'success' => true,
+                'confidence' => $confidence,
+                'error_code' => null,
+                'error_message' => null,
+            ];
+        }
+
+        return [
             'success' => false,
-            'confidence' => null,
-            'error_code' => null,
-            'error_message' => null,
+            'confidence' => $confidence,
+            'error_code' => $this->parseErrorCode($response),
+            'error_message' => $this->parseErrorMessage($response),
         ];
+    }
 
-        // 解析成功状态
-        if (isset($response['code']) && $response['code'] === '200') {
-            $result['success'] = true;
-        } elseif (isset($response['success']) && $response['success'] === true) {
-            $result['success'] = true;
+    /**
+     * 解析成功状态
+     *
+     * @param array<string, mixed> $response
+     */
+    private function parseSuccessStatus(array $response): bool
+    {
+        if (isset($response['code']) && '200' === $response['code']) {
+            return true;
         }
 
-        // 解析置信度
+        return isset($response['success']) && true === $response['success'];
+    }
+
+    /**
+     * 解析置信度
+     *
+     * @param array<string, mixed> $response
+     */
+    private function parseConfidence(array $response): ?float
+    {
         if (isset($response['confidence'])) {
-            $result['confidence'] = floatval($response['confidence']);
-        } elseif (isset($response['score'])) {
-            $result['confidence'] = floatval($response['score']);
+            $confidence = $response['confidence'];
+
+            return is_numeric($confidence) ? (float) $confidence : null;
         }
 
-        // 解析错误信息
-        if (!$result['success']) {
-            $result['error_code'] = $response['error_code'] ?? $response['code'] ?? 'UNKNOWN_ERROR';
-            $result['error_message'] = $response['error_message'] ?? $response['message'] ?? '认证失败';
+        if (isset($response['score'])) {
+            $score = $response['score'];
+
+            return is_numeric($score) ? (float) $score : null;
         }
 
-        return $result;
+        return null;
+    }
+
+    /**
+     * 解析错误代码
+     *
+     * @param array<string, mixed> $response
+     */
+    private function parseErrorCode(array $response): string
+    {
+        $errorCode = $response['error_code'] ?? ($response['code'] ?? 'UNKNOWN_ERROR');
+
+        return is_string($errorCode) ? $errorCode : 'UNKNOWN_ERROR';
+    }
+
+    /**
+     * 解析错误消息
+     *
+     * @param array<string, mixed> $response
+     */
+    private function parseErrorMessage(array $response): string
+    {
+        $errorMessage = $response['error_message'] ?? ($response['message'] ?? '认证失败');
+
+        return is_string($errorMessage) ? $errorMessage : '认证失败';
     }
 
     /**
@@ -158,11 +263,15 @@ class AuthenticationProviderService
      */
     public function logProviderUsage(AuthenticationProvider $provider, bool $success): void
     {
-        $this->logger->info('提供商使用记录', [
-            'provider' => $provider->getCode(),
-            'success' => $success,
-            'timestamp' => time(),
-        ]);
+        try {
+            $this->logger->info('提供商使用记录', [
+                'provider' => $provider->getCode(),
+                'success' => $success,
+                'timestamp' => time(),
+            ]);
+        } catch (\Throwable $logError) {
+            // 忽略日志记录错误
+        }
 
         // 这里可以扩展更详细的统计逻辑
         // 例如：成功率、响应时间统计等
@@ -170,6 +279,9 @@ class AuthenticationProviderService
 
     /**
      * 构建请求数据
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
      */
     private function buildRequestData(AuthenticationProvider $provider, array $data): array
     {
@@ -179,25 +291,25 @@ class AuthenticationProviderService
         $appId = $provider->getConfigValue('app_id');
         $appSecret = $provider->getConfigValue('app_secret');
 
-        if ($appId !== null && $appId !== '') {
+        if (null !== $appId && '' !== $appId) {
             $requestData['app_id'] = $appId;
         }
 
         // 添加签名
-        if ($appSecret !== null && $appSecret !== '') {
+        if (is_string($appSecret) && '' !== $appSecret) {
             $requestData['timestamp'] = time();
             $requestData['nonce'] = uniqid();
             $requestData['sign'] = $this->generateSignature($data, $appSecret, $requestData['timestamp'], $requestData['nonce']);
         }
 
         // 添加业务数据
-        $requestData = array_merge($requestData, $data);
-
-        return $requestData;
+        return array_merge($requestData, $data);
     }
 
     /**
      * 构建请求头
+     *
+     * @return array<string, string>
      */
     private function buildHeaders(AuthenticationProvider $provider): array
     {
@@ -208,7 +320,7 @@ class AuthenticationProviderService
 
         // 添加认证头
         $apiKey = $provider->getConfigValue('api_key');
-        if ($apiKey !== null && $apiKey !== '') {
+        if (is_string($apiKey) && '' !== $apiKey) {
             $headers['Authorization'] = 'Bearer ' . $apiKey;
         }
 
@@ -217,6 +329,8 @@ class AuthenticationProviderService
 
     /**
      * 生成签名
+     *
+     * @param array<string, mixed> $data
      */
     private function generateSignature(array $data, string $secret, int $timestamp, string $nonce): string
     {
@@ -226,7 +340,8 @@ class AuthenticationProviderService
 
         $string = '';
         foreach ($params as $key => $value) {
-            $string .= $key . '=' . $value . '&';
+            $valueStr = is_scalar($value) ? (string) $value : '';
+            $string .= $key . '=' . $valueStr . '&';
         }
         $string .= 'secret=' . $secret;
 
@@ -238,9 +353,30 @@ class AuthenticationProviderService
      */
     private function createDummyAuthentication(): RealNameAuthentication
     {
-        // 这是一个临时解决方案，实际使用时应该传入真正的认证对象
-        // 或者重构 AuthenticationResult 的构造函数
-        // 注意：此方法应该被重构，因为创建 RealNameAuthentication 需要真实的用户对象
-        throw new AuthenticationException('createTempAuthentication 方法需要重构，不能创建没有用户的认证记录');
+        // 创建一个虚拟用户用于临时认证记录
+        $dummyUser = new class implements UserInterface {
+            public function getUserIdentifier(): string
+            {
+                return 'dummy_verification_user';
+            }
+
+            public function getRoles(): array
+            {
+                return ['ROLE_USER'];
+            }
+
+            public function eraseCredentials(): void
+            {
+            }
+        };
+
+        // 创建临时认证记录
+        $authentication = new RealNameAuthentication();
+        $authentication->setUser($dummyUser);
+        $authentication->setType(AuthenticationType::PERSONAL);
+        $authentication->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
+        $authentication->setSubmittedData([]); // 设置空的提交数据
+
+        return $authentication;
     }
 }

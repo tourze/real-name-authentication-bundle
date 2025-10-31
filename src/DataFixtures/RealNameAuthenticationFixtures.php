@@ -2,10 +2,12 @@
 
 namespace Tourze\RealNameAuthenticationBundle\DataFixtures;
 
-use DateTimeImmutable;
+use BizUserBundle\DataFixtures\BizUserFixtures;
+use BizUserBundle\Entity\BizUser;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
@@ -14,34 +16,12 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 
 /**
- * Mock用户类，仅用于测试数据
- */
-class MockUser implements UserInterface
-{
-    public function __construct(private readonly string $identifier)
-    {
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->identifier;
-    }
-
-    public function getRoles(): array
-    {
-        return ['ROLE_USER'];
-    }
-
-    public function eraseCredentials(): void
-    {
-    }
-}
-
-/**
  * 实名认证记录数据填充
  *
  * 创建各种状态和类型的认证记录，用于测试和演示
  */
+#[When(env: 'test')]
+#[When(env: 'dev')]
 class RealNameAuthenticationFixtures extends Fixture implements DependentFixtureInterface
 {
     // 认证记录引用常量
@@ -51,26 +31,43 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
     public function load(ObjectManager $manager): void
     {
-        /** @var AuthenticationProvider $governmentProvider */
         $governmentProvider = $this->getReference(AuthenticationProviderFixtures::GOVERNMENT_PROVIDER_REFERENCE, AuthenticationProvider::class);
+        assert($governmentProvider instanceof AuthenticationProvider);
 
-        /** @var AuthenticationProvider $bankUnionProvider */
         $bankUnionProvider = $this->getReference(AuthenticationProviderFixtures::BANK_UNION_PROVIDER_REFERENCE, AuthenticationProvider::class);
+        assert($bankUnionProvider instanceof AuthenticationProvider);
 
-        /** @var AuthenticationProvider $carrierProvider */
         $carrierProvider = $this->getReference(AuthenticationProviderFixtures::CARRIER_PROVIDER_REFERENCE, AuthenticationProvider::class);
+        assert($carrierProvider instanceof AuthenticationProvider);
 
-        /** @var AuthenticationProvider $thirdPartyProvider */
         $thirdPartyProvider = $this->getReference(AuthenticationProviderFixtures::THIRD_PARTY_PROVIDER_REFERENCE, AuthenticationProvider::class);
+        assert($thirdPartyProvider instanceof AuthenticationProvider);
+
+        // 如果找不到用户引用，则创建测试用户
+        try {
+            $adminUser = $this->getReference(BizUserFixtures::ADMIN_USER_REFERENCE, UserInterface::class);
+        } catch (\Exception $e) {
+            // 创建简单的测试用户对象
+            $adminUser = $this->createMockUser('admin-test', 'admin@example.local');
+            $manager->persist($adminUser);
+        }
+
+        try {
+            $moderatorUser = $this->getReference(BizUserFixtures::MODERATOR_USER_REFERENCE, UserInterface::class);
+        } catch (\Exception $e) {
+            // 创建简单的测试用户对象
+            $moderatorUser = $this->createMockUser('moderator-test', 'moderator@example.local');
+            $manager->persist($moderatorUser);
+        }
 
         // 1. 个人认证 - 已通过（身份证二要素）
         $personalApproved = new RealNameAuthentication();
-        $personalApproved->setUser(new MockUser('user_001'));
+        $personalApproved->setUser($adminUser);
         $personalApproved->setType(AuthenticationType::PERSONAL);
         $personalApproved->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $personalApproved->setSubmittedData([
             'name' => '张三',
-            'id_card' => '110101199001011234',
+            'id_card' => '11010119900101100X',
         ]);
         $personalApproved->updateStatus(
             AuthenticationStatus::APPROVED,
@@ -87,18 +84,18 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
                 'processing_time' => 1250,
             ]
         );
-        $personalApproved->setExpireTime(new DateTimeImmutable('+1 year'));
+        $personalApproved->setExpireTime(new \DateTimeImmutable('+1 year'));
         $manager->persist($personalApproved);
         $this->addReference(self::PERSONAL_APPROVED_AUTH_REFERENCE, $personalApproved);
 
         // 2. 个人认证 - 待审核（运营商三要素）
         $personalPending = new RealNameAuthentication();
-        $personalPending->setUser(new MockUser('user_002'));
+        $personalPending->setUser($moderatorUser);
         $personalPending->setType(AuthenticationType::PERSONAL);
         $personalPending->setMethod(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
         $personalPending->setSubmittedData([
             'name' => '李四',
-            'id_card' => '320101199002021234',
+            'id_card' => '110101199002021007',
             'mobile' => '13800138000',
         ]);
         $personalPending->updateStatus(AuthenticationStatus::PENDING);
@@ -107,13 +104,13 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 3. 个人认证 - 已拒绝（银行卡三要素）
         $personalRejected = new RealNameAuthentication();
-        $personalRejected->setUser(new MockUser('user_003'));
+        $personalRejected->setUser($adminUser);
         $personalRejected->setType(AuthenticationType::PERSONAL);
         $personalRejected->setMethod(AuthenticationMethod::BANK_CARD_THREE_ELEMENTS);
         $personalRejected->setSubmittedData([
             'name' => '王五',
-            'id_card' => '440101199003031234',
-            'bank_card' => '6225881234567890',
+            'id_card' => '110101199003031004',
+            'bank_card' => '6222021234567894',
         ]);
         $personalRejected->updateStatus(
             AuthenticationStatus::REJECTED,
@@ -135,13 +132,13 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 4. 个人认证 - 处理中（银行卡四要素）
         $personalProcessing = new RealNameAuthentication();
-        $personalProcessing->setUser(new MockUser('user_004'));
+        $personalProcessing->setUser($moderatorUser);
         $personalProcessing->setType(AuthenticationType::PERSONAL);
         $personalProcessing->setMethod(AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS);
         $personalProcessing->setSubmittedData([
             'name' => '赵六',
-            'id_card' => '510101199004041234',
-            'bank_card' => '6225881234567891',
+            'id_card' => '51010119900404100X',
+            'bank_card' => '6228481234567894',
             'mobile' => '13900139000',
         ]);
         $personalProcessing->updateStatus(AuthenticationStatus::PROCESSING);
@@ -149,24 +146,24 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
 
         // 5. 个人认证 - 已过期
         $personalExpired = new RealNameAuthentication();
-        $personalExpired->setUser(new MockUser('user_005'));
+        $personalExpired->setUser($adminUser);
         $personalExpired->setType(AuthenticationType::PERSONAL);
         $personalExpired->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $personalExpired->setSubmittedData([
             'name' => '孙七',
-            'id_card' => '330101199005051234',
+            'id_card' => '33010119900505100X',
         ]);
         $personalExpired->updateStatus(
             AuthenticationStatus::APPROVED,
             ['confidence' => 0.96],
             ['provider_name' => $governmentProvider->getName()]
         );
-        $personalExpired->setExpireTime(new DateTimeImmutable('-1 month'));
+        $personalExpired->setExpireTime(new \DateTimeImmutable('-1 month'));
         $manager->persist($personalExpired);
 
         // 6. 活体检测认证 - 已通过
         $livenessApproved = new RealNameAuthentication();
-        $livenessApproved->setUser(new MockUser('user_006'));
+        $livenessApproved->setUser($moderatorUser);
         $livenessApproved->setType(AuthenticationType::PERSONAL);
         $livenessApproved->setMethod(AuthenticationMethod::LIVENESS_DETECTION);
         $livenessApproved->setSubmittedData([
@@ -189,18 +186,18 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
                 'processing_time' => 3200,
             ]
         );
-        $livenessApproved->setExpireTime(new DateTimeImmutable('+1 year'));
+        $livenessApproved->setExpireTime(new \DateTimeImmutable('+1 year'));
         $manager->persist($livenessApproved);
 
         // 7. 多个用户的认证历史（同一用户多次认证）
-        $user007 = new MockUser('user_007');
+        $user007 = $adminUser;
         $userMultipleAuth1 = new RealNameAuthentication();
         $userMultipleAuth1->setUser($user007);
         $userMultipleAuth1->setType(AuthenticationType::PERSONAL);
         $userMultipleAuth1->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
         $userMultipleAuth1->setSubmittedData([
             'name' => '周八',
-            'id_card' => '370101199006061234',
+            'id_card' => '37010119900606100X',
         ]);
         $userMultipleAuth1->updateStatus(
             AuthenticationStatus::REJECTED,
@@ -217,7 +214,7 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
         $userMultipleAuth2->setMethod(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
         $userMultipleAuth2->setSubmittedData([
             'name' => '周八',
-            'id_card' => '370101199006061234',
+            'id_card' => '37010119900606100X',
             'mobile' => '13700137000',
         ]);
         $userMultipleAuth2->updateStatus(
@@ -225,12 +222,13 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
             ['confidence' => 0.92],
             ['provider_name' => $carrierProvider->getName()]
         );
-        $userMultipleAuth2->setExpireTime(new DateTimeImmutable('+1 year'));
+        $userMultipleAuth2->setExpireTime(new \DateTimeImmutable('+1 year'));
         $manager->persist($userMultipleAuth2);
 
         // 8. 批量测试数据（模拟大量用户）
-        for ($i = 1; $i <= 20; $i++) {
-            $testUser = new MockUser(sprintf('test_user_%03d', $i));
+        for ($i = 1; $i <= 20; ++$i) {
+            // 循环使用 admin 和 moderator 用户
+            $testUser = 0 === $i % 2 ? $adminUser : $moderatorUser;
             $methods = [
                 AuthenticationMethod::ID_CARD_TWO_ELEMENTS,
                 AuthenticationMethod::CARRIER_THREE_ELEMENTS,
@@ -252,18 +250,18 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
             $testAuth->setMethod($selectedMethod);
             $testAuth->setSubmittedData([
                 'name' => '测试用户' . $i,
-                'id_card' => '11010119900101' . sprintf('%04d', $i),
+                'id_card' => '11010119900101100X',
                 'mobile' => '138' . sprintf('%08d', $i),
-                'bank_card' => '6225881234567' . sprintf('%03d', $i),
+                'bank_card' => '6222021234567894',
             ]);
 
-            if ($selectedStatus === AuthenticationStatus::APPROVED) {
+            if (AuthenticationStatus::APPROVED === $selectedStatus) {
                 $testAuth->updateStatus(
                     $selectedStatus,
                     ['confidence' => 0.8 + (rand(0, 20) / 100)],
                     ['provider_name' => 'Test Provider']
                 );
-                $testAuth->setExpireTime(new DateTimeImmutable('+1 year'));
+                $testAuth->setExpireTime(new \DateTimeImmutable('+1 year'));
             } else {
                 $testAuth->updateStatus($selectedStatus);
             }
@@ -274,10 +272,29 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
         $manager->flush();
     }
 
+    /**
+     * 创建用于测试的简单用户对象
+     */
+    private function createMockUser(string $username, string $email): BizUser
+    {
+        $user = new BizUser();
+        $user->setUsername($username);
+        $user->setEmail($email);
+        $user->setPasswordHash('dummy-hash-for-testing');
+        $user->setValid(true);
+
+        return $user;
+    }
+
+    /**
+     * @return array<int, class-string<Fixture>>
+     */
     public function getDependencies(): array
     {
         return [
             AuthenticationProviderFixtures::class,
+            // BizUserFixtures 设为可选依赖，如果不存在会创建 mock 用户
+            // BizUserFixtures::class,
         ];
     }
 }

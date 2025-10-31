@@ -11,17 +11,17 @@ use Tourze\RealNameAuthenticationBundle\Service\ManualReviewService;
 /**
  * 待审核列表控制器
  */
-class ReviewStatisticsPendingController extends AbstractController
+final class ReviewStatisticsPendingController extends AbstractController
 {
     public function __construct(
-        private readonly ManualReviewService $manualReviewService
+        private readonly ManualReviewService $manualReviewService,
     ) {
     }
 
-    #[Route(path: '/admin/auth/statistics/pending', name: 'admin_auth_statistics_pending')]
+    #[Route(path: '/admin/auth/statistics/pending', name: 'admin_auth_statistics_pending', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
-        $limit = $request->query->getInt('limit', 50);
+        $limit = max(1, min(200, (int) $request->query->get('limit', 50)));
         $pendingAuthentications = $this->manualReviewService->getPendingAuthentications($limit);
 
         return $this->render('@RealNameAuthentication/admin/pending_list.html.twig', [

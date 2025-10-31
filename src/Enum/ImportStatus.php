@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Enum;
 
+use Tourze\EnumExtra\BadgeInterface;
 use Tourze\EnumExtra\Itemable;
 use Tourze\EnumExtra\ItemTrait;
 use Tourze\EnumExtra\Labelable;
@@ -13,7 +14,7 @@ use Tourze\EnumExtra\SelectTrait;
  *
  * 表示批量导入的各种状态
  */
-enum ImportStatus: string implements Labelable, Itemable, Selectable
+enum ImportStatus: string implements Labelable, Itemable, Selectable, BadgeInterface
 {
     use ItemTrait;
     use SelectTrait;
@@ -28,9 +29,9 @@ enum ImportStatus: string implements Labelable, Itemable, Selectable
     {
         return match ($this) {
             self::PENDING => '等待处理',
-            self::PROCESSING => '正在处理',
-            self::COMPLETED => '处理完成',
-            self::FAILED => '处理失败',
+            self::PROCESSING => '处理中',
+            self::COMPLETED => '已完成',
+            self::FAILED => '失败',
             self::CANCELLED => '已取消',
         };
     }
@@ -40,7 +41,30 @@ enum ImportStatus: string implements Labelable, Itemable, Selectable
      */
     public function isFinal(): bool
     {
-        return in_array($this, [self::COMPLETED, self::FAILED, self::CANCELLED]);
+        return match ($this) {
+            self::PENDING, self::PROCESSING => false,
+            self::COMPLETED, self::FAILED, self::CANCELLED => true,
+        };
+    }
+
+    public function getBadge(): string
+    {
+        return match ($this) {
+            self::PENDING => BadgeInterface::WARNING,
+            self::PROCESSING => BadgeInterface::INFO,
+            self::COMPLETED => BadgeInterface::SUCCESS,
+            self::FAILED => BadgeInterface::DANGER,
+            self::CANCELLED => BadgeInterface::SECONDARY,
+        };
+    }
+
+    /**
+     * 获取状态的CSS样式类
+     * @deprecated 使用 getBadge() 方法代替
+     */
+    public function getCssClass(): string
+    {
+        return $this->getBadge();
     }
 
     /**
@@ -48,20 +72,9 @@ enum ImportStatus: string implements Labelable, Itemable, Selectable
      */
     public function isCancellable(): bool
     {
-        return in_array($this, [self::PENDING]);
-    }
-
-    /**
-     * 获取状态对应的CSS颜色类
-     */
-    public function getCssClass(): string
-    {
         return match ($this) {
-            self::PENDING => 'warning',
-            self::PROCESSING => 'info',
-            self::COMPLETED => 'success',
-            self::FAILED => 'danger',
-            self::CANCELLED => 'secondary',
+            self::PENDING, self::PROCESSING => true,
+            self::COMPLETED, self::FAILED, self::CANCELLED => false,
         };
     }
-} 
+}

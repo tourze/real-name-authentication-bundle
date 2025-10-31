@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Controller\Api;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,11 +14,12 @@ use Tourze\RealNameAuthenticationBundle\Service\PersonalAuthenticationService;
 /**
  * 查询认证历史控制器
  */
-class GetAuthHistoryController extends AbstractController
+#[WithMonologChannel(channel: 'real_name_authentication')]
+final class GetAuthHistoryController extends AbstractController
 {
     public function __construct(
         private readonly PersonalAuthenticationService $personalAuthService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -32,7 +34,7 @@ class GetAuthHistoryController extends AbstractController
             }
 
             $authentications = $this->personalAuthService->getAuthenticationHistory($user);
-            
+
             $data = [];
             foreach ($authentications as $auth) {
                 $data[] = [
@@ -43,8 +45,8 @@ class GetAuthHistoryController extends AbstractController
                     'status' => $auth->getStatus()->value,
                     'statusLabel' => $auth->getStatus()->getLabel(),
                     'reason' => $auth->getReason(),
-                    'createTime' => $auth->getCreateTime()->format('Y-m-d H:i:s'),
-                    'updateTime' => $auth->getUpdateTime()->format('Y-m-d H:i:s'),
+                    'createTime' => $auth->getCreateTime()?->format('Y-m-d H:i:s'),
+                    'updateTime' => $auth->getUpdateTime()?->format('Y-m-d H:i:s'),
                     'expireTime' => $auth->getExpireTime()?->format('Y-m-d H:i:s'),
                     'isExpired' => $auth->isExpired(),
                     'isApproved' => $auth->isApproved(),
@@ -53,13 +55,12 @@ class GetAuthHistoryController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
-
         } catch (\Throwable $e) {
             $this->logger->error('查询认证历史失败', [
                 'user_identifier' => $this->getUser()?->getUserIdentifier(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return new JsonResponse(['error' => '服务器内部错误'], Response::HTTP_INTERNAL_SERVER_ERROR);

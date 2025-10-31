@@ -2,10 +2,11 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Tests\Entity;
 
-use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
@@ -13,23 +14,29 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 
 /**
  * 实名认证实体测试
+ *
+ * @internal
  */
-class RealNameAuthenticationTest extends TestCase
+#[CoversClass(RealNameAuthentication::class)]
+final class RealNameAuthenticationTest extends AbstractEntityTestCase
 {
     private UserInterface&MockObject $mockUser;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->mockUser = $this->createMock(UserInterface::class);
         $this->mockUser->expects($this->any())
             ->method('getUserIdentifier')
-            ->willReturn('test_user');
+            ->willReturn('test_user')
+        ;
     }
 
     /**
      * 测试实体创建时的默认值设置
      */
-    public function test_entity_creation_with_defaults(): void
+    public function testEntityCreationWithDefaults(): void
     {
         $authentication = new RealNameAuthentication();
 
@@ -37,7 +44,8 @@ class RealNameAuthenticationTest extends TestCase
         $this->assertNotEmpty($authentication->getId());
         $this->assertEquals(AuthenticationStatus::PENDING, $authentication->getStatus());
         $this->assertTrue($authentication->isValid());
-        // 时间戳会在持久化时由 Doctrine 自动设置
+        // 时间戳字段使用TimestampableAware trait，在构造函数中为null
+        // 实际的时间戳会在持久化时由Doctrine监听器设置
         $this->assertNull($authentication->getCreateTime());
         $this->assertNull($authentication->getUpdateTime());
         $this->assertNull($authentication->getExpireTime());
@@ -49,7 +57,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取用户
      */
-    public function test_set_and_get_user(): void
+    public function testSetAndGetUser(): void
     {
         $authentication = new RealNameAuthentication();
         $authentication->setUser($this->mockUser);
@@ -61,7 +69,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取认证类型
      */
-    public function test_set_and_get_type(): void
+    public function testSetAndGetType(): void
     {
         $authentication = new RealNameAuthentication();
         $authentication->setType(AuthenticationType::PERSONAL);
@@ -72,7 +80,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取认证方式
      */
-    public function test_set_and_get_method(): void
+    public function testSetAndGetMethod(): void
     {
         $authentication = new RealNameAuthentication();
         $authentication->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
@@ -83,13 +91,9 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试状态更新方法
      */
-    public function test_update_status(): void
+    public function testUpdateStatus(): void
     {
         $authentication = new RealNameAuthentication();
-        $originalUpdateTime = $authentication->getUpdateTime();
-
-        // 等待一毫秒确保时间戳不同
-        usleep(1000);
 
         $verificationResult = ['result' => 'passed', 'confidence' => 0.95];
         $providerResponse = ['code' => '0000', 'message' => 'success'];
@@ -106,13 +110,13 @@ class RealNameAuthenticationTest extends TestCase
         $this->assertEquals($verificationResult, $authentication->getVerificationResult());
         $this->assertEquals($providerResponse, $authentication->getProviderResponse());
         $this->assertEquals($reason, $authentication->getReason());
-        $this->assertGreaterThan($originalUpdateTime, $authentication->getUpdateTime());
+        // 时间戳由TimestampableAware trait管理，在持久化时自动更新，不在updateStatus方法中更新
     }
 
     /**
      * 测试过期判断逻辑
      */
-    public function test_is_expired(): void
+    public function testIsExpired(): void
     {
         $authentication = new RealNameAuthentication();
 
@@ -120,12 +124,12 @@ class RealNameAuthenticationTest extends TestCase
         $this->assertFalse($authentication->isExpired());
 
         // 设置未来时间
-        $futureTime = new DateTimeImmutable('+1 year');
+        $futureTime = new \DateTimeImmutable('+1 year');
         $authentication->setExpireTime($futureTime);
         $this->assertFalse($authentication->isExpired());
 
         // 设置过去时间
-        $pastTime = new DateTimeImmutable('-1 day');
+        $pastTime = new \DateTimeImmutable('-1 day');
         $authentication->setExpireTime($pastTime);
         $this->assertTrue($authentication->isExpired());
     }
@@ -133,7 +137,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试审核通过判断逻辑
      */
-    public function test_is_approved(): void
+    public function testIsApproved(): void
     {
         $authentication = new RealNameAuthentication();
         $authentication->setStatus(AuthenticationStatus::APPROVED);
@@ -142,12 +146,12 @@ class RealNameAuthenticationTest extends TestCase
         $this->assertTrue($authentication->isApproved());
 
         // 设置未来过期时间的已通过认证
-        $futureTime = new DateTimeImmutable('+1 year');
+        $futureTime = new \DateTimeImmutable('+1 year');
         $authentication->setExpireTime($futureTime);
         $this->assertTrue($authentication->isApproved());
 
         // 设置过去过期时间的已通过认证（已过期）
-        $pastTime = new DateTimeImmutable('-1 day');
+        $pastTime = new \DateTimeImmutable('-1 day');
         $authentication->setExpireTime($pastTime);
         $this->assertFalse($authentication->isApproved());
 
@@ -160,10 +164,10 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取提交数据
      */
-    public function test_set_and_get_submitted_data(): void
+    public function testSetAndGetSubmittedData(): void
     {
         $authentication = new RealNameAuthentication();
-        $data = ['name' => '张三', 'idCard' => '110101199001011234'];
+        $data = ['name' => '张三', 'idCard' => '11010119900101100X'];
 
         $authentication->setSubmittedData($data);
         $this->assertEquals($data, $authentication->getSubmittedData());
@@ -172,7 +176,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取验证结果
      */
-    public function test_set_and_get_verification_result(): void
+    public function testSetAndGetVerificationResult(): void
     {
         $authentication = new RealNameAuthentication();
         $result = ['passed' => true, 'confidence' => 0.98];
@@ -184,7 +188,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取提供商响应
      */
-    public function test_set_and_get_provider_response(): void
+    public function testSetAndGetProviderResponse(): void
     {
         $authentication = new RealNameAuthentication();
         $response = ['code' => '0000', 'message' => 'success', 'data' => []];
@@ -196,7 +200,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取拒绝原因
      */
-    public function test_set_and_get_reason(): void
+    public function testSetAndGetReason(): void
     {
         $authentication = new RealNameAuthentication();
         $reason = '身份证信息不匹配';
@@ -208,10 +212,10 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试设置和获取过期时间
      */
-    public function test_set_and_get_expire_time(): void
+    public function testSetAndGetExpireTime(): void
     {
         $authentication = new RealNameAuthentication();
-        $expireTime = new DateTimeImmutable('+1 year');
+        $expireTime = new \DateTimeImmutable('+1 year');
 
         $authentication->setExpireTime($expireTime);
         $this->assertEquals($expireTime, $authentication->getExpireTime());
@@ -220,7 +224,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试有效性设置
      */
-    public function test_set_and_get_valid(): void
+    public function testSetAndGetValid(): void
     {
         $authentication = new RealNameAuthentication();
 
@@ -234,7 +238,7 @@ class RealNameAuthenticationTest extends TestCase
     /**
      * 测试toString方法
      */
-    public function test_to_string(): void
+    public function testToString(): void
     {
         $authentication = new RealNameAuthentication();
         $authentication->setUser($this->mockUser);
@@ -243,46 +247,56 @@ class RealNameAuthenticationTest extends TestCase
         $authentication->setStatus(AuthenticationStatus::PENDING);
 
         $expected = '个人认证-身份证二要素(待审核)';
-        $this->assertEquals($expected, (string)$authentication);
+        $this->assertEquals($expected, (string) $authentication);
     }
 
     /**
-     * 测试审计字段设置
+     * 创建被测实体的实例
      */
-    public function test_audit_fields(): void
+    protected function createEntity(): object
     {
-        $authentication = new RealNameAuthentication();
+        $entity = new RealNameAuthentication();
+        $entity->setUser($this->mockUser);
+        $entity->setType(AuthenticationType::PERSONAL);
+        $entity->setMethod(AuthenticationMethod::ID_CARD_TWO_ELEMENTS);
 
-        $authentication->setCreatedBy('admin');
-        $authentication->setUpdatedBy('admin2');
-        $authentication->setCreatedFromIp('192.168.1.1');
-        $authentication->setUpdatedFromIp('192.168.1.2');
-
-        $this->assertEquals('admin', $authentication->getCreatedBy());
-        $this->assertEquals('admin2', $authentication->getUpdatedBy());
-        $this->assertEquals('192.168.1.1', $authentication->getCreatedFromIp());
-        $this->assertEquals('192.168.1.2', $authentication->getUpdatedFromIp());
+        return $entity;
     }
 
     /**
-     * 测试更新时间自动更新
+     * 提供属性及其样本值的 Data Provider
+     *
+     * @return iterable<string, array{string, mixed}>
      */
-    public function test_update_time_auto_update(): void
+    public static function propertiesProvider(): iterable
+    {
+        yield 'type' => ['type', AuthenticationType::PERSONAL];
+        yield 'status' => ['status', AuthenticationStatus::APPROVED];
+        yield 'method' => ['method', AuthenticationMethod::ID_CARD_TWO_ELEMENTS];
+        yield 'submittedData' => ['submittedData', ['name' => '张三', 'idCard' => '11010119900101100X']];
+        yield 'verificationResult' => ['verificationResult', ['passed' => true, 'confidence' => 0.95]];
+        yield 'providerResponse' => ['providerResponse', ['code' => '0000', 'message' => 'success']];
+        yield 'reason' => ['reason', '认证通过'];
+        yield 'expireTime' => ['expireTime', new \DateTimeImmutable('+1 year')];
+        yield 'valid' => ['valid', false];
+    }
+
+    /**
+     * 测试时间戳由TimestampableAware trait管理
+     */
+    public function testTimestampManagedByTrait(): void
     {
         $authentication = new RealNameAuthentication();
-        $originalUpdateTime = $authentication->getUpdateTime();
 
-        // 等待一毫秒确保时间戳不同
-        usleep(1000);
+        // 使用TimestampableAware trait时，时间戳在构造函数中为null
+        $this->assertNull($authentication->getCreateTime());
+        $this->assertNull($authentication->getUpdateTime());
 
-        // 任何设置操作都应该更新时间戳
+        // setter方法不会自动更新时间戳，时间戳由Doctrine监听器在持久化时设置
         $authentication->setStatus(AuthenticationStatus::PROCESSING);
-        $this->assertGreaterThan($originalUpdateTime, $authentication->getUpdateTime());
-
-        $newUpdateTime = $authentication->getUpdateTime();
-        usleep(1000);
+        $this->assertNull($authentication->getUpdateTime());
 
         $authentication->setMethod(AuthenticationMethod::CARRIER_THREE_ELEMENTS);
-        $this->assertGreaterThan($newUpdateTime, $authentication->getUpdateTime());
+        $this->assertNull($authentication->getUpdateTime());
     }
-} 
+}

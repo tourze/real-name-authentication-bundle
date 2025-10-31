@@ -2,18 +2,22 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Tests\Enum;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitEnum\AbstractEnumTestCase;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 
 /**
  * 认证状态枚举测试
+ *
+ * @internal
  */
-class AuthenticationStatusTest extends TestCase
+#[CoversClass(AuthenticationStatus::class)]
+final class AuthenticationStatusTest extends AbstractEnumTestCase
 {
     /**
      * 测试所有状态枚举值
      */
-    public function test_all_status_values_exist(): void
+    public function testAllStatusValuesExist(): void
     {
         $expectedValues = [
             'pending',
@@ -23,7 +27,7 @@ class AuthenticationStatusTest extends TestCase
             'expired',
         ];
 
-        $actualValues = array_map(fn($case) => $case->value, AuthenticationStatus::cases());
+        $actualValues = array_map(fn ($case) => $case->value, AuthenticationStatus::cases());
 
         $this->assertEquals($expectedValues, $actualValues);
         $this->assertCount(5, AuthenticationStatus::cases());
@@ -32,7 +36,7 @@ class AuthenticationStatusTest extends TestCase
     /**
      * 测试标签获取
      */
-    public function test_get_label(): void
+    public function testGetLabel(): void
     {
         $this->assertEquals('待审核', AuthenticationStatus::PENDING->getLabel());
         $this->assertEquals('审核中', AuthenticationStatus::PROCESSING->getLabel());
@@ -44,12 +48,12 @@ class AuthenticationStatusTest extends TestCase
     /**
      * 测试最终状态判断
      */
-    public function test_is_final(): void
+    public function testIsFinal(): void
     {
         // 非最终状态
         $this->assertFalse(AuthenticationStatus::PENDING->isFinal());
         $this->assertFalse(AuthenticationStatus::PROCESSING->isFinal());
-        
+
         // 最终状态
         $this->assertTrue(AuthenticationStatus::APPROVED->isFinal());
         $this->assertTrue(AuthenticationStatus::REJECTED->isFinal());
@@ -59,7 +63,7 @@ class AuthenticationStatusTest extends TestCase
     /**
      * 测试枚举值创建
      */
-    public function test_enum_from_value(): void
+    public function testEnumFromValue(): void
     {
         $this->assertEquals(AuthenticationStatus::PENDING, AuthenticationStatus::from('pending'));
         $this->assertEquals(AuthenticationStatus::PROCESSING, AuthenticationStatus::from('processing'));
@@ -71,7 +75,7 @@ class AuthenticationStatusTest extends TestCase
     /**
      * 测试无效枚举值
      */
-    public function test_invalid_enum_value(): void
+    public function testInvalidEnumValue(): void
     {
         $this->expectException(\ValueError::class);
         AuthenticationStatus::from('invalid_status');
@@ -80,11 +84,26 @@ class AuthenticationStatusTest extends TestCase
     /**
      * 测试枚举实现的接口方法
      */
-    public function test_interface_methods(): void
+    public function testInterfaceMethods(): void
     {
         $status = AuthenticationStatus::PENDING;
-        
+
         // 测试是否实现了 Labelable 接口
         $this->assertNotEmpty($status->getLabel());
     }
-} 
+
+    /**
+     * 测试 toArray 方法
+     */
+    public function testToArray(): void
+    {
+        $status = AuthenticationStatus::PENDING;
+        $array = $status->toArray();
+
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('value', $array);
+        $this->assertArrayHasKey('label', $array);
+        $this->assertEquals('pending', $array['value']);
+        $this->assertEquals('待审核', $array['label']);
+    }
+}

@@ -4,8 +4,9 @@ namespace Tourze\RealNameAuthenticationBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
+use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepository;
 
@@ -19,48 +20,69 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationResultRepositor
     name: 'authentication_result',
     options: ['comment' => '认证结果表']
 )]
-#[ORM\Index(name: 'authentication_result_idx_authentication_id', columns: ['authentication_id'])]
-#[ORM\Index(name: 'authentication_result_idx_provider_id', columns: ['provider_id'])]
-#[ORM\Index(name: 'authentication_result_idx_request_id', columns: ['request_id'])]
-#[ORM\Index(name: 'authentication_result_idx_success', columns: ['success'])]
-class AuthenticationResult implements Stringable
+class AuthenticationResult implements \Stringable
 {
     use TimestampableAware;
+
     #[ORM\Id]
-    #[ORM\Column(type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[ORM\CustomIdGenerator]
+    #[ORM\Column(name: 'id', type: Types::STRING, length: 36, options: ['comment' => '主键ID'])]
+    #[Assert\Length(max: 36)]
     private string $id;
 
     #[ORM\ManyToOne(targetEntity: RealNameAuthentication::class)]
     #[ORM\JoinColumn(name: 'authentication_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull]
+    #[Assert\Valid]
     private RealNameAuthentication $authentication;
 
     #[ORM\ManyToOne(targetEntity: AuthenticationProvider::class, inversedBy: 'results')]
     #[ORM\JoinColumn(name: 'provider_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull]
+    #[Assert\Valid]
     private AuthenticationProvider $provider;
 
-    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => '请求ID'])]
+    #[ORM\Column(name: 'request_id', type: Types::STRING, length: 100, options: ['comment' => '请求ID'])]
+    #[IndexColumn]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     private string $requestId;
 
-    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否成功'])]
+    #[ORM\Column(name: 'success', type: Types::BOOLEAN, options: ['comment' => '是否成功'])]
+    #[IndexColumn]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'bool')]
     private bool $success;
 
-    #[ORM\Column(type: Types::FLOAT, nullable: true, options: ['comment' => '置信度（0-1之间）'])]
+    #[ORM\Column(name: 'confidence', type: Types::FLOAT, nullable: true, options: ['comment' => '置信度（0-1之间）'])]
+    #[Assert\Type(type: 'float')]
+    #[Assert\Range(min: 0, max: 1)]
     private ?float $confidence = null;
 
-    #[ORM\Column(type: Types::JSON, options: ['comment' => '响应数据'])]
+    /** @var array<string, mixed> */
+    #[ORM\Column(name: 'response_data', type: Types::JSON, options: ['comment' => '响应数据'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'array')]
     private array $responseData = [];
 
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true, options: ['comment' => '错误代码'])]
+    #[ORM\Column(name: 'error_code', type: Types::STRING, length: 50, nullable: true, options: ['comment' => '错误代码'])]
+    #[Assert\Length(max: 50)]
     private ?string $errorCode = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '错误消息'])]
+    #[ORM\Column(name: 'error_message', type: Types::TEXT, nullable: true, options: ['comment' => '错误消息'])]
+    #[Assert\Type(type: 'string')]
+    #[Assert\Length(max: 65535)]
     private ?string $errorMessage = null;
 
-    #[ORM\Column(type: Types::INTEGER, options: ['comment' => '处理时间（毫秒）'])]
+    #[ORM\Column(name: 'processing_time', type: Types::INTEGER, options: ['comment' => '处理时间（毫秒）'])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'int')]
+    #[Assert\GreaterThanOrEqual(value: 0)]
     private int $processingTime;
 
-
-    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[ORM\Column(name: 'valid', type: Types::BOOLEAN, options: ['comment' => '是否有效', 'default' => true])]
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'bool')]
     private bool $valid = true;
 
     public function __construct()
@@ -72,6 +94,7 @@ class AuthenticationResult implements Stringable
     public function __toString(): string
     {
         $status = $this->success ? '成功' : '失败';
+
         return sprintf('%s - %s (%s)', $this->provider->getName(), $status, $this->requestId);
     }
 
@@ -130,11 +153,17 @@ class AuthenticationResult implements Stringable
         $this->confidence = $confidence;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getResponseData(): array
     {
         return $this->responseData;
     }
 
+    /**
+     * @param array<string, mixed> $responseData
+     */
     public function setResponseData(array $responseData): void
     {
         $this->responseData = $responseData;

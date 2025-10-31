@@ -2,22 +2,23 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Repository;
 
-use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Tourze\PHPUnitSymfonyKernelTest\Attribute\AsRepository;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
+use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
 
 /**
  * 实名认证Repository实现
  *
- * @method RealNameAuthentication|null find($id, $lockMode = null, $lockVersion = null)
- * @method RealNameAuthentication|null findOneBy(array $criteria, array $orderBy = null)
- * @method RealNameAuthentication[] findAll()
- * @method RealNameAuthentication[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<RealNameAuthentication>
  */
+#[Autoconfigure(public: true)]
+#[AsRepository(entityClass: RealNameAuthentication::class)]
 class RealNameAuthenticationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -27,42 +28,63 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
 
     /**
      * 根据用户查询认证记录
+     *
+     * @return array<RealNameAuthentication>
      */
     public function findByUser(UserInterface $user): array
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.user = :user')
             ->setParameter('user', $user)
             ->orderBy('r.createTime', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
     }
 
     /**
      * 根据用户标识符查询认证记录
+     *
+     * @return array<RealNameAuthentication>
      */
     public function findByUserIdentifier(string $userIdentifier): array
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->join('r.user', 'u')
-            ->andWhere('u.userIdentifier = :userIdentifier')
+            ->andWhere('u.username = :userIdentifier')
             ->setParameter('userIdentifier', $userIdentifier)
             ->orderBy('r.createTime', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
     }
 
     /**
      * 根据状态查询认证记录
+     *
+     * @return array<RealNameAuthentication>
      */
     public function findByStatus(AuthenticationStatus $status): array
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.status = :status')
             ->setParameter('status', $status)
             ->orderBy('r.createTime', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
     }
 
     /**
@@ -70,7 +92,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
      */
     public function findByUserAndType(UserInterface $user, AuthenticationType $type): ?RealNameAuthentication
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.user = :user')
             ->andWhere('r.type = :type')
             ->setParameter('user', $user)
@@ -78,22 +100,33 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->orderBy('r.createTime', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
+        assert($result instanceof RealNameAuthentication || $result === null);
+
+        return $result;
     }
 
     /**
      * 查询已过期的认证记录
+     *
+     * @return array<RealNameAuthentication>
      */
     public function findExpiredAuthentications(): array
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.expireTime IS NOT NULL')
             ->andWhere('r.expireTime < :now')
             ->andWhere('r.status = :approved')
             ->setParameter('now', new \DateTimeImmutable())
             ->setParameter('approved', AuthenticationStatus::APPROVED)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
     }
 
     /**
@@ -101,8 +134,8 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
      */
     public function countByStatusAndDateRange(
         AuthenticationStatus $status,
-        DateTimeInterface $start,
-        DateTimeInterface $end
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
     ): int {
         return (int) $this->createQueryBuilder('r')
             ->select('COUNT(r.id)')
@@ -113,7 +146,8 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->setParameter('start', $start)
             ->setParameter('end', $end)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
@@ -121,13 +155,17 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
      */
     public function findLatestByUser(UserInterface $user): ?RealNameAuthentication
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.user = :user')
             ->setParameter('user', $user)
             ->orderBy('r.createTime', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
+        assert($result instanceof RealNameAuthentication || $result === null);
+
+        return $result;
     }
 
     /**
@@ -135,7 +173,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
      */
     public function findValidByUserAndType(UserInterface $user, AuthenticationType $type): ?RealNameAuthentication
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->andWhere('r.user = :user')
             ->andWhere('r.type = :type')
             ->andWhere('r.status = :approved')
@@ -148,11 +186,19 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->orderBy('r.createTime', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
+        assert($result instanceof RealNameAuthentication || $result === null);
+
+        return $result;
     }
 
     /**
      * 分页查询认证记录
+     *
+     * @param array<string, mixed> $criteria
+     *
+     * @return array<RealNameAuthentication>
      */
     public function findWithPagination(int $page, int $size, array $criteria = []): array
     {
@@ -161,46 +207,167 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
         // 应用筛选条件
         if (isset($criteria['status'])) {
             $qb->andWhere('r.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (isset($criteria['type'])) {
             $qb->andWhere('r.type = :type')
-               ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (isset($criteria['user'])) {
             $qb->andWhere('r.user = :user')
-               ->setParameter('user', $criteria['user']);
+                ->setParameter('user', $criteria['user'])
+            ;
         }
 
         if (isset($criteria['userIdentifier'])) {
             $qb->join('r.user', 'u')
-               ->andWhere('u.userIdentifier = :userIdentifier')
-               ->setParameter('userIdentifier', $criteria['userIdentifier']);
+                ->andWhere('u.username = :userIdentifier')
+                ->setParameter('userIdentifier', $criteria['userIdentifier'])
+            ;
         }
 
         if (isset($criteria['method'])) {
             $qb->andWhere('r.method = :method')
-               ->setParameter('method', $criteria['method']);
+                ->setParameter('method', $criteria['method'])
+            ;
         }
 
         if (isset($criteria['createTimeStart'])) {
             $qb->andWhere('r.createTime >= :createTimeStart')
-               ->setParameter('createTimeStart', $criteria['createTimeStart']);
+                ->setParameter('createTimeStart', $criteria['createTimeStart'])
+            ;
         }
 
         if (isset($criteria['createTimeEnd'])) {
             $qb->andWhere('r.createTime <= :createTimeEnd')
-               ->setParameter('createTimeEnd', $criteria['createTimeEnd']);
+                ->setParameter('createTimeEnd', $criteria['createTimeEnd'])
+            ;
         }
 
         $offset = ($page - 1) * $size;
 
-        return $qb->orderBy('r.createTime', 'DESC')
-                  ->setFirstResult($offset)
-                  ->setMaxResults($size)
-                  ->getQuery()
-                  ->getResult();
+        $result = $qb->orderBy('r.createTime', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($size)
+            ->getQuery()
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
     }
-} 
+
+    /**
+     * 根据用户和状态查询认证记录（带限制）
+     *
+     * @return array<RealNameAuthentication>
+     */
+    public function findByUserAndStatusWithLimit(UserInterface $user, AuthenticationStatus $status, int $limit = 10): array
+    {
+        $result = $this->createQueryBuilder('r')
+            ->andWhere('r.user = :user')
+            ->andWhere('r.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', $status)
+            ->orderBy('r.createTime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
+    }
+
+    /**
+     * 根据用户和状态查询认证记录
+     *
+     * @return array<RealNameAuthentication>
+     */
+    public function findByUserAndStatus(UserInterface $user, AuthenticationStatus $status): array
+    {
+        $result = $this->createQueryBuilder('r')
+            ->andWhere('r.user = :user')
+            ->andWhere('r.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', $status)
+            ->orderBy('r.createTime', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+        assert(is_array($result));
+
+        /** @var list<RealNameAuthentication> $result */
+        return $result;
+    }
+
+    /**
+     * 根据认证状态统计
+     *
+     * @return array<string, int>
+     */
+    public function getStatisticsByStatus(): array
+    {
+        /** @var array<array{status: AuthenticationStatus, count: int|numeric-string}> $result */
+        $result = $this->createQueryBuilder('r')
+            ->select('r.status, COUNT(r.id) as count')
+            ->andWhere('r.valid = true')
+            ->groupBy('r.status')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        $statistics = [];
+        foreach ($result as $row) {
+            $statistics[$row['status']->value] = (int) $row['count'];
+        }
+
+        return $statistics;
+    }
+
+    /**
+     * 根据认证方式统计
+     *
+     * @return array<string, int>
+     */
+    public function getStatisticsByMethod(): array
+    {
+        /** @var array<array{method: AuthenticationMethod, count: int|numeric-string}> $result */
+        $result = $this->createQueryBuilder('r')
+            ->select('r.method, COUNT(r.id) as count')
+            ->andWhere('r.valid = true')
+            ->groupBy('r.method')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        $statistics = [];
+        foreach ($result as $row) {
+            $statistics[$row['method']->value] = (int) $row['count'];
+        }
+
+        return $statistics;
+    }
+
+    public function save(RealNameAuthentication $entity, bool $flush = true): void
+    {
+        $this->getEntityManager()->persist($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(RealNameAuthentication $entity, bool $flush = true): void
+    {
+        $this->getEntityManager()->remove($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+}

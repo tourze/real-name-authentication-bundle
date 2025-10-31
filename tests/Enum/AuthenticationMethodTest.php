@@ -2,18 +2,22 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Tests\Enum;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitEnum\AbstractEnumTestCase;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 
 /**
  * 认证方式枚举测试
+ *
+ * @internal
  */
-class AuthenticationMethodTest extends TestCase
+#[CoversClass(AuthenticationMethod::class)]
+final class AuthenticationMethodTest extends AbstractEnumTestCase
 {
     /**
      * 测试所有枚举值存在
      */
-    public function test_all_enum_values_exist(): void
+    public function testAllEnumValuesExist(): void
     {
         $expectedValues = [
             'id_card_two_elements',
@@ -23,7 +27,7 @@ class AuthenticationMethodTest extends TestCase
             'liveness_detection',
         ];
 
-        $actualValues = array_map(fn($case) => $case->value, AuthenticationMethod::cases());
+        $actualValues = array_map(fn ($case) => $case->value, AuthenticationMethod::cases());
 
         $this->assertEquals($expectedValues, $actualValues);
         $this->assertCount(5, AuthenticationMethod::cases());
@@ -32,7 +36,7 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试标签获取
      */
-    public function test_get_label(): void
+    public function testGetLabel(): void
     {
         $this->assertEquals('身份证二要素', AuthenticationMethod::ID_CARD_TWO_ELEMENTS->getLabel());
         $this->assertEquals('运营商三要素', AuthenticationMethod::CARRIER_THREE_ELEMENTS->getLabel());
@@ -44,7 +48,7 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试必需字段获取
      */
-    public function test_get_required_fields(): void
+    public function testGetRequiredFields(): void
     {
         $this->assertEquals(['name', 'id_card'], AuthenticationMethod::ID_CARD_TWO_ELEMENTS->getRequiredFields());
         $this->assertEquals(['name', 'id_card', 'mobile'], AuthenticationMethod::CARRIER_THREE_ELEMENTS->getRequiredFields());
@@ -56,7 +60,7 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试个人认证方式判断
      */
-    public function test_is_personal(): void
+    public function testIsPersonal(): void
     {
         foreach (AuthenticationMethod::cases() as $method) {
             $this->assertTrue($method->isPersonal(), "方式 {$method->value} 应该是个人认证方式");
@@ -66,7 +70,7 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试枚举值创建
      */
-    public function test_enum_from_value(): void
+    public function testEnumFromValue(): void
     {
         $this->assertEquals(AuthenticationMethod::ID_CARD_TWO_ELEMENTS, AuthenticationMethod::from('id_card_two_elements'));
         $this->assertEquals(AuthenticationMethod::CARRIER_THREE_ELEMENTS, AuthenticationMethod::from('carrier_three_elements'));
@@ -78,7 +82,7 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试无效枚举值
      */
-    public function test_invalid_enum_value(): void
+    public function testInvalidEnumValue(): void
     {
         $this->expectException(\ValueError::class);
         AuthenticationMethod::from('invalid_method');
@@ -87,11 +91,26 @@ class AuthenticationMethodTest extends TestCase
     /**
      * 测试枚举实现的接口方法
      */
-    public function test_interface_methods(): void
+    public function testInterfaceMethods(): void
     {
         $method = AuthenticationMethod::ID_CARD_TWO_ELEMENTS;
-        
+
         // 测试是否实现了 Labelable 接口
         $this->assertNotEmpty($method->getLabel());
     }
-} 
+
+    /**
+     * 测试 toArray 方法
+     */
+    public function testToArray(): void
+    {
+        $method = AuthenticationMethod::ID_CARD_TWO_ELEMENTS;
+        $array = $method->toArray();
+
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('value', $array);
+        $this->assertArrayHasKey('label', $array);
+        $this->assertEquals('id_card_two_elements', $array['value']);
+        $this->assertEquals('身份证二要素', $array['label']);
+    }
+}

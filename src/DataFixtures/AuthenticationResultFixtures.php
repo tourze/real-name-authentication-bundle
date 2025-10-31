@@ -5,6 +5,7 @@ namespace Tourze\RealNameAuthenticationBundle\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationProvider;
 use Tourze\RealNameAuthenticationBundle\Entity\AuthenticationResult;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
@@ -14,21 +15,23 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
  *
  * 创建各种认证结果记录，用于测试和演示
  */
+#[When(env: 'test')]
+#[When(env: 'dev')]
 class AuthenticationResultFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        /** @var RealNameAuthentication $personalApproved */
         $personalApproved = $this->getReference(RealNameAuthenticationFixtures::PERSONAL_APPROVED_AUTH_REFERENCE, RealNameAuthentication::class);
-        
-        /** @var RealNameAuthentication $personalRejected */
+        assert($personalApproved instanceof RealNameAuthentication);
+
         $personalRejected = $this->getReference(RealNameAuthenticationFixtures::PERSONAL_REJECTED_AUTH_REFERENCE, RealNameAuthentication::class);
-        
-        /** @var AuthenticationProvider $governmentProvider */
+        assert($personalRejected instanceof RealNameAuthentication);
+
         $governmentProvider = $this->getReference(AuthenticationProviderFixtures::GOVERNMENT_PROVIDER_REFERENCE, AuthenticationProvider::class);
-        
-        /** @var AuthenticationProvider $bankUnionProvider */
+        assert($governmentProvider instanceof AuthenticationProvider);
+
         $bankUnionProvider = $this->getReference(AuthenticationProviderFixtures::BANK_UNION_PROVIDER_REFERENCE, AuthenticationProvider::class);
+        assert($bankUnionProvider instanceof AuthenticationProvider);
 
         // 1. 成功的认证结果
         $successResult = new AuthenticationResult();
@@ -106,26 +109,26 @@ class AuthenticationResultFixtures extends Fixture implements DependentFixtureIn
         $manager->persist($highConfidenceResult);
 
         // 5. 批量创建测试结果
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 10; ++$i) {
             $testResult = new AuthenticationResult();
             $testResult->setAuthentication($personalApproved);
             $testResult->setProvider($governmentProvider);
             $testResult->setRequestId('REQ_TEST_' . $i . '_' . uniqid());
-            $testResult->setSuccess(rand(0, 1) === 1);
+            $testResult->setSuccess(1 === rand(0, 1));
             $testResult->setConfidence(rand(50, 100) / 100);
             $testResult->setResponseData([
                 'test_data' => true,
                 'batch_id' => $i,
-                'response_code' => rand(0, 1) === 1 ? '0000' : '1001',
-                'response_message' => rand(0, 1) === 1 ? '测试成功' : '测试失败',
+                'response_code' => 1 === rand(0, 1) ? '0000' : '1001',
+                'response_message' => 1 === rand(0, 1) ? '测试成功' : '测试失败',
             ]);
             $testResult->setProcessingTime(rand(500, 3000));
-            
+
             if (!$testResult->isSuccess()) {
                 $testResult->setErrorCode('TEST_ERROR_' . $i);
                 $testResult->setErrorMessage('测试错误消息 ' . $i);
             }
-            
+
             $manager->persist($testResult);
         }
 

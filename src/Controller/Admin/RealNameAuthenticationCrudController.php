@@ -3,6 +3,7 @@
 namespace Tourze\RealNameAuthenticationBundle\Controller\Admin;
 
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminCrud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -25,6 +26,7 @@ use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
@@ -34,12 +36,15 @@ use Tourze\RealNameAuthenticationBundle\Service\ManualReviewService;
 
 /**
  * 实名认证记录CRUD控制器
+ *
+ * @extends AbstractCrudController<RealNameAuthentication>
  */
-class RealNameAuthenticationCrudController extends AbstractCrudController
+#[AdminCrud(routePath: '/real-name-auth/authentication', routeName: 'real_name_auth_authentication')]
+final class RealNameAuthenticationCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly ManualReviewService $manualReviewService,
-        private readonly AdminUrlGenerator $adminUrlGenerator
+        private readonly AdminUrlGenerator $adminUrlGenerator,
     ) {
     }
 
@@ -60,89 +65,107 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->setHelp('index', '查看和管理所有实名认证记录，支持人工审核')
             ->setDefaultSort(['createTime' => 'DESC'])
             ->setSearchFields(['id', 'user.userIdentifier', 'reason'])
-            ->setPaginatorPageSize(30);
+            ->setPaginatorPageSize(30)
+        ;
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id', 'ID')
             ->setMaxLength(9999)
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('user', '用户')
             ->setMaxLength(20)
             ->formatValue(function ($value) {
-                return $value ? $value->getUserIdentifier() : 'Unknown';
+                return ($value instanceof UserInterface) ? $value->getUserIdentifier() : 'Unknown';
             })
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield ChoiceField::new('type', '认证类型')
             ->setFormType(EnumType::class)
             ->setFormTypeOptions(['class' => AuthenticationType::class])
             ->formatValue(function ($value) {
                 return $value instanceof AuthenticationType ? $value->getLabel() : '';
-            });
+            })
+        ;
 
         yield ChoiceField::new('method', '认证方式')
             ->setFormType(EnumType::class)
             ->setFormTypeOptions(['class' => AuthenticationMethod::class])
             ->formatValue(function ($value) {
                 return $value instanceof AuthenticationMethod ? $value->getLabel() : '';
-            });
+            })
+        ;
 
         yield ChoiceField::new('status', '认证状态')
             ->setFormType(EnumType::class)
             ->setFormTypeOptions(['class' => AuthenticationStatus::class])
             ->formatValue(function ($value) {
                 return $value instanceof AuthenticationStatus ? $value->getLabel() : '';
-            });
+            })
+        ;
 
         yield ArrayField::new('submittedData', '提交数据')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield ArrayField::new('verificationResult', '验证结果')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield ArrayField::new('providerResponse', '提供商响应')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextareaField::new('reason', '拒绝原因')
             ->hideOnIndex()
-            ->setNumOfRows(3);
+            ->setNumOfRows(3)
+        ;
 
         yield DateTimeField::new('createTime', '创建时间')
             ->hideOnForm()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
 
         yield DateTimeField::new('updateTime', '更新时间')
             ->hideOnForm()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
 
         yield DateTimeField::new('expireTime', '过期时间')
             ->hideOnIndex()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
 
         yield BooleanField::new('valid', '是否有效')
-            ->renderAsSwitch(false);
+            ->renderAsSwitch(false)
+        ;
 
         yield TextField::new('createdBy', '创建人')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('updatedBy', '更新人')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('createdFromIp', '创建IP')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('updatedFromIp', '更新IP')
             ->hideOnIndex()
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
     }
 
     public function configureActions(Actions $actions): Actions
@@ -152,15 +175,17 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->linkToCrudAction('approveAuthentication')
             ->setCssClass('btn btn-success')
             ->displayIf(function (RealNameAuthentication $entity) {
-                return in_array($entity->getStatus(), [AuthenticationStatus::PENDING, AuthenticationStatus::PROCESSING]);
-            });
+                return in_array($entity->getStatus(), [AuthenticationStatus::PENDING, AuthenticationStatus::PROCESSING], true);
+            })
+        ;
 
         $rejectAction = Action::new('reject', '拒绝', 'fas fa-times')
             ->linkToCrudAction('rejectAuthentication')
             ->setCssClass('btn btn-danger')
             ->displayIf(function (RealNameAuthentication $entity) {
-                return in_array($entity->getStatus(), [AuthenticationStatus::PENDING, AuthenticationStatus::PROCESSING]);
-            });
+                return in_array($entity->getStatus(), [AuthenticationStatus::PENDING, AuthenticationStatus::PROCESSING], true);
+            })
+        ;
 
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -168,37 +193,38 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $rejectAction)
             ->add(Crud::PAGE_DETAIL, $approveAction)
             ->add(Crud::PAGE_DETAIL, $rejectAction)
-            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, 'approve', 'reject', Action::DELETE])
             ->disable(Action::NEW) // 禁用新建功能，认证记录通过API创建
             ->disable(Action::DELETE) // 禁用删除功能，只能设置无效
-            ->disable(Action::EDIT); // 禁用编辑功能，认证记录不可修改
+            ->disable(Action::EDIT) // 禁用编辑功能，认证记录不可修改
+            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, 'approve', 'reject'])
+        ;
     }
 
     public function configureFilters(Filters $filters): Filters
     {
-        $typeChoices = [];
-        foreach (AuthenticationType::cases() as $case) {
-            $typeChoices[$case->getLabel()] = $case->value;
-        }
-
-        $methodChoices = [];
-        foreach (AuthenticationMethod::cases() as $case) {
-            $methodChoices[$case->getLabel()] = $case->value;
-        }
-
-        $statusChoices = [];
-        foreach (AuthenticationStatus::cases() as $case) {
-            $statusChoices[$case->getLabel()] = $case->value;
-        }
-
         return $filters
             ->add(TextFilter::new('user', '用户标识符'))
-            ->add(ChoiceFilter::new('type', '认证类型')->setChoices($typeChoices))
-            ->add(ChoiceFilter::new('method', '认证方式')->setChoices($methodChoices))
-            ->add(ChoiceFilter::new('status', '认证状态')->setChoices($statusChoices))
+            ->add(ChoiceFilter::new('type', '认证类型')->setChoices([
+                '个人认证' => AuthenticationType::PERSONAL->value,
+            ]))
+            ->add(ChoiceFilter::new('method', '认证方式')->setChoices([
+                '身份证二要素' => AuthenticationMethod::ID_CARD_TWO_ELEMENTS->value,
+                '运营商三要素' => AuthenticationMethod::CARRIER_THREE_ELEMENTS->value,
+                '银行卡三要素' => AuthenticationMethod::BANK_CARD_THREE_ELEMENTS->value,
+                '银行卡四要素' => AuthenticationMethod::BANK_CARD_FOUR_ELEMENTS->value,
+                '活体检测' => AuthenticationMethod::LIVENESS_DETECTION->value,
+            ]))
+            ->add(ChoiceFilter::new('status', '认证状态')->setChoices([
+                '待处理' => AuthenticationStatus::PENDING->value,
+                '处理中' => AuthenticationStatus::PROCESSING->value,
+                '已通过' => AuthenticationStatus::APPROVED->value,
+                '已拒绝' => AuthenticationStatus::REJECTED->value,
+                '已过期' => AuthenticationStatus::EXPIRED->value,
+            ]))
             ->add(BooleanFilter::new('valid', '是否有效'))
             ->add(DateTimeFilter::new('createTime', '创建时间'))
-            ->add(DateTimeFilter::new('expireTime', '过期时间'));
+            ->add(DateTimeFilter::new('expireTime', '过期时间'))
+        ;
     }
 
     /**
@@ -207,11 +233,11 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
     #[AdminAction(routePath: '{entityId}/approveAuthentication', routeName: 'approveAuthentication')]
     public function approveAuthentication(AdminContext $context, Request $request): Response
     {
-        /** @var RealNameAuthentication $authentication */
         $authentication = $context->getEntity()->getInstance();
+        assert($authentication instanceof RealNameAuthentication);
 
         try {
-            $reviewNote = $request->query->get('note', '管理员手动通过');
+            $reviewNote = (string) $request->query->get('note', '管理员手动通过');
             $this->manualReviewService->approveAuthentication($authentication->getId(), $reviewNote);
 
             $this->addFlash('success', sprintf('认证申请 %s 已通过审核', $authentication->getId()));
@@ -228,8 +254,8 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
     #[AdminAction(routePath: '{entityId}/rejectAuthentication', routeName: 'rejectAuthentication', methods: ['GET', 'POST'])]
     public function rejectAuthentication(AdminContext $context, Request $request): Response
     {
-        /** @var RealNameAuthentication $authentication */
         $authentication = $context->getEntity()->getInstance();
+        assert($authentication instanceof RealNameAuthentication);
 
         // 如果是GET请求，显示拒绝原因输入表单
         if ($request->isMethod('GET')) {
@@ -242,13 +268,13 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
         // 处理POST请求
         try {
             $reason = $request->request->get('reason');
-            $reviewNote = $request->request->get('review_note', '管理员手动拒绝');
+            $reviewNote = (string) $request->request->get('review_note', '管理员手动拒绝');
 
-            if (empty($reason)) {
+            if ('' === $reason || null === $reason) {
                 throw new InvalidAuthenticationDataException('请提供拒绝原因');
             }
 
-            $this->manualReviewService->rejectAuthentication($authentication->getId(), $reason, $reviewNote);
+            $this->manualReviewService->rejectAuthentication($authentication->getId(), (string) $reason, $reviewNote);
 
             $this->addFlash('success', sprintf('认证申请 %s 已拒绝', $authentication->getId()));
         } catch (\Throwable $e) {
@@ -266,7 +292,8 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
         $url = $this->adminUrlGenerator
             ->setController(self::class)
             ->setAction(Action::INDEX)
-            ->generateUrl();
+            ->generateUrl()
+        ;
 
         return $this->redirect($url);
     }
@@ -280,6 +307,7 @@ class RealNameAuthenticationCrudController extends AbstractCrudController
             ->setController(self::class)
             ->setAction(Action::DETAIL)
             ->setEntityId($context->getEntity()->getPrimaryKeyValue())
-            ->generateUrl();
+            ->generateUrl()
+        ;
     }
 }

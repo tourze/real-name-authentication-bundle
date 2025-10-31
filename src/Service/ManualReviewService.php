@@ -2,10 +2,11 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Service;
 
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Exception\AuthenticationException;
@@ -17,13 +18,15 @@ use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationReposit
  *
  * 提供后台管理员手动审核认证申请的功能
  */
+#[Autoconfigure(public: true)]
+#[WithMonologChannel(channel: 'real_name_authentication')]
 class ManualReviewService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly RealNameAuthenticationRepository $authRepository,
         private readonly Security $security,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -33,21 +36,22 @@ class ManualReviewService
     public function approveAuthentication(string $authId, ?string $reviewNote = null): RealNameAuthentication
     {
         $authentication = $this->getAuthenticationForReview($authId);
-        
+
         // 检查当前状态是否可以审核
         if (!$this->canReview($authentication)) {
             throw new AuthenticationException('该认证记录当前状态不允许审核');
         }
 
         $reviewer = $this->getCurrentReviewer();
-        
+
         // 更新认证状态为通过
+        $reviewTime = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
         $authentication->updateStatus(
             AuthenticationStatus::APPROVED,
             [
                 'manual_review' => true,
                 'reviewer' => $reviewer,
-                'review_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'review_time' => $reviewTime,
                 'review_note' => $reviewNote,
                 'confidence' => 1.0, // 人工审核给予最高置信度
             ],
@@ -60,7 +64,7 @@ class ManualReviewService
         );
 
         // 设置过期时间（1年后）
-        $authentication->setExpireTime(new DateTimeImmutable('+1 year'));
+        $authentication->setExpireTime(new \DateTimeImmutable('+1 year'));
 
         $this->entityManager->flush();
 
@@ -75,26 +79,27 @@ class ManualReviewService
      */
     public function rejectAuthentication(string $authId, string $reason, ?string $reviewNote = null): RealNameAuthentication
     {
-        if (empty($reason)) {
+        if ('' === $reason) {
             throw new InvalidAuthenticationDataException('拒绝认证必须提供拒绝原因');
         }
 
         $authentication = $this->getAuthenticationForReview($authId);
-        
+
         // 检查当前状态是否可以审核
         if (!$this->canReview($authentication)) {
             throw new AuthenticationException('该认证记录当前状态不允许审核');
         }
 
         $reviewer = $this->getCurrentReviewer();
-        
+
         // 更新认证状态为拒绝
+        $reviewTime = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
         $authentication->updateStatus(
             AuthenticationStatus::REJECTED,
             [
                 'manual_review' => true,
                 'reviewer' => $reviewer,
-                'review_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'review_time' => $reviewTime,
                 'review_note' => $reviewNote,
                 'confidence' => 0.0,
             ],
@@ -117,22 +122,25 @@ class ManualReviewService
 
     /**
      * 批量审核认证申请
+     *
+     * @param array<int, string> $authIds
+     * @return array<string, RealNameAuthentication|array{error: string}>
      */
     public function batchReview(array $authIds, string $action, ?string $reason = null, ?string $reviewNote = null): array
     {
-        if (!in_array($action, ['approve', 'reject'])) {
+        if (!in_array($action, ['approve', 'reject'], true)) {
             throw new InvalidAuthenticationDataException('无效的审核操作');
         }
 
-        if ($action === 'reject' && empty($reason)) {
+        if ('reject' === $action && (null === $reason || '' === $reason)) {
             throw new InvalidAuthenticationDataException('批量拒绝必须提供拒绝原因');
         }
 
         $results = [];
-        
+
         foreach ($authIds as $authId) {
             try {
-                if ($action === 'approve') {
+                if ('approve' === $action) {
                     $results[$authId] = $this->approveAuthentication($authId, $reviewNote);
                 } else {
                     $results[$authId] = $this->rejectAuthentication($authId, $reason, $reviewNote);
@@ -141,7 +149,7 @@ class ManualReviewService
                 $this->logger->error('批量审核失败', [
                     'auth_id' => $authId,
                     'action' => $action,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
                 $results[$authId] = ['error' => $e->getMessage()];
             }
@@ -152,6 +160,8 @@ class ManualReviewService
 
     /**
      * 获取待审核的认证记录
+     *
+     * @return array<int, RealNameAuthentication>
      */
     public function getPendingAuthentications(int $limit = 50): array
     {
@@ -164,6 +174,8 @@ class ManualReviewService
 
     /**
      * 获取审核统计信息
+     *
+     * @return array{approved: int, rejected: int, pending: int, total: int, approval_rate: float}
      */
     public function getReviewStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
@@ -200,8 +212,8 @@ class ManualReviewService
     private function getAuthenticationForReview(string $authId): RealNameAuthentication
     {
         $authentication = $this->authRepository->find($authId);
-        
-        if ($authentication === null) {
+
+        if (null === $authentication) {
             throw new AuthenticationException('认证记录不存在');
         }
 
@@ -219,8 +231,8 @@ class ManualReviewService
     {
         return in_array($authentication->getStatus(), [
             AuthenticationStatus::PENDING,
-            AuthenticationStatus::PROCESSING
-        ]);
+            AuthenticationStatus::PROCESSING,
+        ], true);
     }
 
     /**
@@ -229,7 +241,8 @@ class ManualReviewService
     private function getCurrentReviewer(): string
     {
         $user = $this->security->getUser();
-        return $user !== null ? $user->getUserIdentifier() : 'system';
+
+        return null !== $user ? $user->getUserIdentifier() : 'system';
     }
 
     /**
@@ -240,7 +253,7 @@ class ManualReviewService
         string $action,
         string $reviewer,
         ?string $reviewNote = null,
-        ?string $reason = null
+        ?string $reason = null,
     ): void {
         $this->logger->info('人工审核操作', [
             'auth_id' => $authentication->getId(),
@@ -252,4 +265,4 @@ class ManualReviewService
             'timestamp' => time(),
         ]);
     }
-} 
+}

@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Controller\Api;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,11 +14,12 @@ use Tourze\RealNameAuthenticationBundle\Service\PersonalAuthenticationService;
 /**
  * 查询认证状态控制器
  */
-class CheckAuthStatusController extends AbstractController
+#[WithMonologChannel(channel: 'real_name_authentication')]
+final class CheckAuthStatusController extends AbstractController
 {
     public function __construct(
         private readonly PersonalAuthenticationService $personalAuthService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -29,8 +31,8 @@ class CheckAuthStatusController extends AbstractController
 
             // 检查认证记录是否属于当前用户
             $currentUser = $this->getUser();
-            if (!$currentUser instanceof UserInterface || 
-                $authentication->getUser()->getUserIdentifier() !== $currentUser->getUserIdentifier()) {
+            if (!$currentUser instanceof UserInterface
+                || $authentication->getUser()->getUserIdentifier() !== $currentUser->getUserIdentifier()) {
                 return new JsonResponse(['error' => '无权限访问此认证记录'], Response::HTTP_FORBIDDEN);
             }
 
@@ -45,20 +47,19 @@ class CheckAuthStatusController extends AbstractController
                     'status' => $authentication->getStatus()->value,
                     'statusLabel' => $authentication->getStatus()->getLabel(),
                     'reason' => $authentication->getReason(),
-                    'createTime' => $authentication->getCreateTime()->format('Y-m-d H:i:s'),
-                    'updateTime' => $authentication->getUpdateTime()->format('Y-m-d H:i:s'),
+                    'createTime' => $authentication->getCreateTime()?->format('Y-m-d H:i:s'),
+                    'updateTime' => $authentication->getUpdateTime()?->format('Y-m-d H:i:s'),
                     'expireTime' => $authentication->getExpireTime()?->format('Y-m-d H:i:s'),
                     'isExpired' => $authentication->isExpired(),
                     'isApproved' => $authentication->isApproved(),
-                ]
+                ],
             ]);
-
         } catch (\InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         } catch (\Throwable $e) {
             $this->logger->error('查询认证状态失败', [
                 'authId' => $authId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return new JsonResponse(['error' => '服务器内部错误'], Response::HTTP_INTERNAL_SERVER_ERROR);

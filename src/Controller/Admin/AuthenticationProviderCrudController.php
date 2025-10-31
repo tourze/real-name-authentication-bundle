@@ -2,6 +2,7 @@
 
 namespace Tourze\RealNameAuthenticationBundle\Controller\Admin;
 
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminCrud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -25,8 +26,11 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
 
 /**
  * 认证提供商CRUD控制器
+ *
+ * @extends AbstractCrudController<AuthenticationProvider>
  */
-class AuthenticationProviderCrudController extends AbstractCrudController
+#[AdminCrud(routePath: '/real-name-auth/provider', routeName: 'real_name_auth_provider')]
+final class AuthenticationProviderCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -45,21 +49,25 @@ class AuthenticationProviderCrudController extends AbstractCrudController
             ->setHelp('index', '管理第三方认证服务提供商配置')
             ->setDefaultSort(['priority' => 'DESC', 'createTime' => 'ASC'])
             ->setSearchFields(['name', 'code', 'apiEndpoint'])
-            ->setPaginatorPageSize(20);
+            ->setPaginatorPageSize(20)
+        ;
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id', 'ID')
             ->setMaxLength(9999)
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
 
         yield TextField::new('name', '提供商名称')
-            ->setRequired(true);
+            ->setRequired(true)
+        ;
 
         yield TextField::new('code', '提供商代码')
             ->setRequired(true)
-            ->setHelp('唯一标识，用于程序调用');
+            ->setHelp('唯一标识，用于程序调用')
+        ;
 
         yield ChoiceField::new('type', '提供商类型')
             ->setFormType(EnumType::class)
@@ -67,41 +75,50 @@ class AuthenticationProviderCrudController extends AbstractCrudController
             ->setRequired(true)
             ->formatValue(function ($value) {
                 return $value instanceof ProviderType ? $value->getLabel() : '';
-            });
+            })
+        ;
 
         yield ArrayField::new('supportedMethods', '支持的认证方式')
-            ->setHelp('配置该提供商支持的认证方式列表');
+            ->setHelp('配置该提供商支持的认证方式列表')
+        ;
 
         yield UrlField::new('apiEndpoint', 'API接口地址')
-            ->setRequired(true);
+            ->setRequired(true)
+        ;
 
         yield ArrayField::new('config', '配置信息')
             ->hideOnIndex()
-            ->setHelp('包含API密钥、签名密钥等敏感信息');
+            ->setHelp('包含API密钥、签名密钥等敏感信息')
+        ;
 
         yield IntegerField::new('priority', '优先级')
-            ->setHelp('数值越大优先级越高，范围0-100');
+            ->setHelp('数值越大优先级越高，范围0-100')
+        ;
 
         yield BooleanField::new('isActive', '是否启用')
-            ->renderAsSwitch(false);
+            ->renderAsSwitch(false)
+        ;
 
         yield BooleanField::new('valid', '是否有效')
-            ->renderAsSwitch(false);
+            ->renderAsSwitch(false)
+        ;
 
         yield DateTimeField::new('createTime', '创建时间')
             ->hideOnForm()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
 
         yield DateTimeField::new('updateTime', '更新时间')
             ->hideOnForm()
-            ->setFormat('yyyy-MM-dd HH:mm:ss');
+            ->setFormat('yyyy-MM-dd HH:mm:ss')
+        ;
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, Action::EDIT, Action::DELETE]);
+        ;
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -117,6 +134,7 @@ class AuthenticationProviderCrudController extends AbstractCrudController
             ->add(ChoiceFilter::new('type', '提供商类型')->setChoices($typeChoices))
             ->add(BooleanFilter::new('isActive', '是否启用'))
             ->add(BooleanFilter::new('valid', '是否有效'))
-            ->add(NumericFilter::new('priority', '优先级'));
+            ->add(NumericFilter::new('priority', '优先级'))
+        ;
     }
 }

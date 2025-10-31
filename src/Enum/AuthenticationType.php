@@ -26,4 +26,3 @@ enum AuthenticationType: string implements Labelable, Itemable, Selectable
         };
     }
 }
- 
