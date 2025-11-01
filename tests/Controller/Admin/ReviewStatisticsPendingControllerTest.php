@@ -41,8 +41,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testGetRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/auth/statistics/pending');
 
@@ -55,8 +54,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testPostRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true);
 
         $client->request('POST', '/admin/auth/statistics/pending');
@@ -66,8 +64,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testPutRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true);
 
         $client->request('PUT', '/admin/auth/statistics/pending');
@@ -77,8 +74,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testDeleteRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true);
 
         $client->request('DELETE', '/admin/auth/statistics/pending');
@@ -88,8 +84,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testPatchRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true);
 
         $client->request('PATCH', '/admin/auth/statistics/pending');
@@ -99,8 +94,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testHeadRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('HEAD', '/admin/auth/statistics/pending');
 
@@ -113,8 +107,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testOptionsRequestWithAuthentication(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true); // 让Symfony处理异常并返回HTTP响应
 
         $client->request('OPTIONS', '/admin/auth/statistics/pending');
@@ -127,8 +120,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testWithCustomPagination(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/auth/statistics/pending', [
             'limit' => '50',
@@ -144,8 +136,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testWithInvalidPaginationParams(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/auth/statistics/pending', [
             'limit' => 'invalid',
@@ -161,8 +152,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testWithLimitBoundaries(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/auth/statistics/pending', [
             'limit' => '0',
@@ -177,8 +167,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
 
     public function testWithLargeLimit(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/auth/statistics/pending', [
             'limit' => '500',
@@ -194,8 +183,7 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
     #[DataProvider('provideNotAllowedMethods')]
     public function testMethodNotAllowed(string $method): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true); // 让Symfony处理异常并返回HTTP响应
         $client->request($method, '/admin/auth/statistics/pending');
         $this->assertEquals(405, $client->getResponse()->getStatusCode());

@@ -256,8 +256,7 @@ final class ReviewStatisticsIndexControllerTest extends AbstractWebTestCase
     #[DataProvider('provideNotAllowedMethods')]
     public function testMethodNotAllowed(string $method): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
         $client->catchExceptions(true); // 让Symfony处理异常并返回HTTP响应
         $client->request($method, '/admin/auth/statistics');
         $this->assertEquals(405, $client->getResponse()->getStatusCode());
