@@ -309,7 +309,7 @@ final class ImportBatchCrudController extends AbstractCrudController
     public function viewRecords(AdminUrlGenerator $adminUrlGenerator): RedirectResponse
     {
         $context = $this->getContext();
-        if ($context === null) {
+        if (null === $context) {
             throw new \LogicException('AdminContext is required');
         }
 

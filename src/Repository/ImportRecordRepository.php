@@ -160,7 +160,7 @@ class ImportRecordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
-        assert($result instanceof ImportRecord || $result === null);
+        assert($result instanceof ImportRecord || null === $result);
 
         return $result;
     }

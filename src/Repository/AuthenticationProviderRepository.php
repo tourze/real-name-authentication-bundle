@@ -42,6 +42,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }
@@ -66,6 +67,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }
@@ -92,6 +94,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }
@@ -114,6 +117,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }
@@ -178,6 +182,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }
@@ -219,6 +224,7 @@ class AuthenticationProviderRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationProvider> $result */
         return $result;
     }

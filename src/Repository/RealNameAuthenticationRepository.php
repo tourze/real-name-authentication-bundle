@@ -102,7 +102,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
-        assert($result instanceof RealNameAuthentication || $result === null);
+        assert($result instanceof RealNameAuthentication || null === $result);
 
         return $result;
     }
@@ -163,7 +163,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
-        assert($result instanceof RealNameAuthentication || $result === null);
+        assert($result instanceof RealNameAuthentication || null === $result);
 
         return $result;
     }
@@ -188,7 +188,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
-        assert($result instanceof RealNameAuthentication || $result === null);
+        assert($result instanceof RealNameAuthentication || null === $result);
 
         return $result;
     }

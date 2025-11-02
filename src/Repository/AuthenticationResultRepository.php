@@ -43,6 +43,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -64,6 +65,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -102,6 +104,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -123,6 +126,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -147,6 +151,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -169,6 +174,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -231,6 +237,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -279,6 +286,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }
@@ -303,6 +311,7 @@ class AuthenticationResultRepository extends ServiceEntityRepository
             ->getResult()
         ;
         assert(is_array($result));
+
         /** @var list<AuthenticationResult> $result */
         return $result;
     }

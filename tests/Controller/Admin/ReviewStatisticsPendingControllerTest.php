@@ -7,7 +7,9 @@ namespace Tourze\RealNameAuthenticationBundle\Tests\Controller\Admin;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 use Tourze\PHPUnitSymfonyWebTest\AbstractWebTestCase;
 use Tourze\RealNameAuthenticationBundle\Controller\Admin\ReviewStatisticsPendingController;
 
@@ -187,5 +189,18 @@ final class ReviewStatisticsPendingControllerTest extends AbstractWebTestCase
         $client->catchExceptions(true); // 让Symfony处理异常并返回HTTP响应
         $client->request($method, '/admin/auth/statistics/pending');
         $this->assertEquals(405, $client->getResponse()->getStatusCode());
+    }
+
+    /**
+     * 创建已认证的客户端（管理员身份）
+     */
+    protected static function createAuthenticatedClient(string $username = 'admin', string $password = 'password'): KernelBrowser
+    {
+        $client = self::createClient();
+        // 使用内存用户登录，避免实例化测试类
+        $user = new InMemoryUser($username, '', ['ROLE_ADMIN']);
+        $client->loginUser($user, 'main');
+
+        return $client;
     }
 }
