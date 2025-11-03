@@ -269,7 +269,8 @@ final class ReviewStatisticsIndexControllerTest extends AbstractWebTestCase
      */
     protected static function createAuthenticatedClient(string $username = 'admin', string $password = 'password'): KernelBrowser
     {
-        $client = self::createClient();
+        // 使用createClientWithDatabase确保数据库和fixtures被正确初始化
+        $client = self::createClientWithDatabase();
         // 使用内存用户登录，避免实例化测试类
         $user = new InMemoryUser($username, '', ['ROLE_ADMIN']);
         $client->loginUser($user, 'main');
