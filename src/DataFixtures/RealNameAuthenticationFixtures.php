@@ -2,8 +2,6 @@
 
 namespace Tourze\RealNameAuthenticationBundle\DataFixtures;
 
-use BizUserBundle\DataFixtures\BizUserFixtures;
-use BizUserBundle\Entity\BizUser;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -43,22 +41,12 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
         $thirdPartyProvider = $this->getReference(AuthenticationProviderFixtures::THIRD_PARTY_PROVIDER_REFERENCE, AuthenticationProvider::class);
         assert($thirdPartyProvider instanceof AuthenticationProvider);
 
-        // 如果找不到用户引用，则创建测试用户
-        try {
-            $adminUser = $this->getReference(BizUserFixtures::ADMIN_USER_REFERENCE, UserInterface::class);
-        } catch (\Exception $e) {
-            // 创建简单的测试用户对象
-            $adminUser = $this->createMockUser('admin-test', 'admin@example.local');
-            $manager->persist($adminUser);
-        }
+        // 创建测试用户（不依赖外部 Bundle 的 fixtures）
+        $adminUser = $this->createFixtureUser('admin-test');
+        $manager->persist($adminUser);
 
-        try {
-            $moderatorUser = $this->getReference(BizUserFixtures::MODERATOR_USER_REFERENCE, UserInterface::class);
-        } catch (\Exception $e) {
-            // 创建简单的测试用户对象
-            $moderatorUser = $this->createMockUser('moderator-test', 'moderator@example.local');
-            $manager->persist($moderatorUser);
-        }
+        $moderatorUser = $this->createFixtureUser('moderator-test');
+        $manager->persist($moderatorUser);
 
         // 1. 个人认证 - 已通过（身份证二要素）
         $personalApproved = new RealNameAuthentication();
@@ -273,17 +261,13 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
     }
 
     /**
-     * 创建用于测试的简单用户对象
+     * 创建用于测试的轻量用户对象
+     *
+     * 使用本地 FixtureUser 而非具体的用户实现，避免跨 Bundle 依赖
      */
-    private function createMockUser(string $username, string $email): BizUser
+    private function createFixtureUser(string $userIdentifier): UserInterface
     {
-        $user = new BizUser();
-        $user->setUsername($username);
-        $user->setEmail($email);
-        $user->setPasswordHash('dummy-hash-for-testing');
-        $user->setValid(true);
-
-        return $user;
+        return new FixtureUser($userIdentifier);
     }
 
     /**
@@ -293,8 +277,6 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
     {
         return [
             AuthenticationProviderFixtures::class,
-            // BizUserFixtures 设为可选依赖，如果不存在会创建 mock 用户
-            // BizUserFixtures::class,
         ];
     }
 }

@@ -461,23 +461,13 @@ final class ManualReviewServiceTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * 创建真实的用户实体
+     * 创建测试用的用户实体
+     *
+     * 使用本地 FixtureUser 而非具体的用户实现，避免跨 Bundle 依赖
      */
     private function createRealUser(string $identifier): UserInterface
     {
-        // 使用BizUser实体类创建真实用户
-        $userClass = 'BizUserBundle\Entity\BizUser';
-        $user = new $userClass();
-
-        // 使用反射设置用户标识
-        $reflection = new \ReflectionClass($user);
-        if ($reflection->hasProperty('username')) {
-            $property = $reflection->getProperty('username');
-            $property->setAccessible(true);
-            $property->setValue($user, $identifier);
-        }
-
-        return $user;
+        return new \Tourze\RealNameAuthenticationBundle\DataFixtures\FixtureUser($identifier);
     }
 
     /**

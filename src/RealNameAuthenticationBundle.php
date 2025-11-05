@@ -2,7 +2,6 @@
 
 namespace Tourze\RealNameAuthenticationBundle;
 
-use BizUserBundle\BizUserBundle;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -22,7 +21,6 @@ class RealNameAuthenticationBundle extends Bundle implements BundleDependencyInt
     public static function getBundleDependencies(): array
     {
         return [
-            BizUserBundle::class => ['all' => true],
             DoctrineBundle::class => ['all' => true],
             SecurityBundle::class => ['all' => true],
             RoutingAutoLoaderBundle::class => ['all' => true],
