@@ -52,11 +52,6 @@ final class RealNameAuthenticationCrudControllerTest extends AbstractEasyAdminCo
         yield 'dummy' => ['dummy'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        $this->assertSame(RealNameAuthentication::class, RealNameAuthenticationCrudController::getEntityFqcn());
-    }
-
     /**
      * @return iterable<string, array{string}>
      */

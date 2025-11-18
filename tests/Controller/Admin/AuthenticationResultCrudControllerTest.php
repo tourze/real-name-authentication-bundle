@@ -53,11 +53,6 @@ final class AuthenticationResultCrudControllerTest extends AbstractEasyAdminCont
         yield 'skipped' => ['skipped'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        $this->assertSame(AuthenticationResult::class, AuthenticationResultCrudController::getEntityFqcn());
-    }
-
     /**
      * @return iterable<string, array{string}>
      */

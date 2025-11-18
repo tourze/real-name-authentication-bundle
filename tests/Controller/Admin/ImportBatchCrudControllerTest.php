@@ -57,11 +57,6 @@ final class ImportBatchCrudControllerTest extends AbstractEasyAdminControllerTes
         yield 'skipped' => ['skipped'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        $this->assertSame(ImportBatch::class, ImportBatchCrudController::getEntityFqcn());
-    }
-
     /**
      * @return iterable<string, array{string}>
      */

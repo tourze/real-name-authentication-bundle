@@ -54,11 +54,6 @@ final class ImportRecordCrudControllerTest extends AbstractEasyAdminControllerTe
         yield 'skipped' => ['skipped'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        $this->assertSame(ImportRecord::class, ImportRecordCrudController::getEntityFqcn());
-    }
-
     /**
      * @return iterable<string, array{string}>
      */

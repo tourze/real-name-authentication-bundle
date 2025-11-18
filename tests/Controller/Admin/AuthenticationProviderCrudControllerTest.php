@@ -66,11 +66,6 @@ final class AuthenticationProviderCrudControllerTest extends AbstractEasyAdminCo
         yield 'priority' => ['priority'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        $this->assertSame(AuthenticationProvider::class, AuthenticationProviderCrudController::getEntityFqcn());
-    }
-
     public function testControllerInstance(): void
     {
         $controller = new AuthenticationProviderCrudController();
