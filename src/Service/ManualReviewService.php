@@ -20,7 +20,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\RealNameAuthenticationReposit
  */
 #[Autoconfigure(public: true)]
 #[WithMonologChannel(channel: 'real_name_authentication')]
-class ManualReviewService
+final class ManualReviewService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

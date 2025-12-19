@@ -7,6 +7,6 @@ namespace Tourze\RealNameAuthenticationBundle\Exception;
 /**
  * 认证提供商不可用异常
  */
-class ProviderNotAvailableException extends \RuntimeException
+final class ProviderNotAvailableException extends \RuntimeException
 {
 }

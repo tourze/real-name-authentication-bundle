@@ -17,7 +17,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\ImportRecordStatus;
  */
 #[Autoconfigure(public: true)]
 #[AsRepository(entityClass: ImportRecord::class)]
-class ImportRecordRepository extends ServiceEntityRepository
+final class ImportRecordRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

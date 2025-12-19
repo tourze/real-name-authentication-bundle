@@ -7,6 +7,6 @@ namespace Tourze\RealNameAuthenticationBundle\Exception;
 /**
  * 实名认证相关异常
  */
-class AuthenticationException extends \RuntimeException
+final class AuthenticationException extends \RuntimeException
 {
 }

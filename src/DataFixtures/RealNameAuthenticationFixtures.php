@@ -12,6 +12,7 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationStatus;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
+use Tourze\UserServiceContracts\UserManagerInterface;
 
 /**
  * 实名认证记录数据填充
@@ -27,6 +28,11 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
     public const PERSONAL_PENDING_AUTH_REFERENCE = 'personal-pending-auth';
     public const PERSONAL_REJECTED_AUTH_REFERENCE = 'personal-rejected-auth';
 
+    public function __construct(
+        private readonly UserManagerInterface $userManager,
+    ) {
+    }
+
     public function load(ObjectManager $manager): void
     {
         $governmentProvider = $this->getReference(AuthenticationProviderFixtures::GOVERNMENT_PROVIDER_REFERENCE, AuthenticationProvider::class);
@@ -41,12 +47,10 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
         $thirdPartyProvider = $this->getReference(AuthenticationProviderFixtures::THIRD_PARTY_PROVIDER_REFERENCE, AuthenticationProvider::class);
         assert($thirdPartyProvider instanceof AuthenticationProvider);
 
-        // 创建测试用户（不依赖外部 Bundle 的 fixtures）
-        $adminUser = $this->createFixtureUser('admin-test');
-        $manager->persist($adminUser);
+        // 创建测试用户（使用 UserManagerInterface）
+        $adminUser = $this->getOrCreateTestUser('admin-test');
 
-        $moderatorUser = $this->createFixtureUser('moderator-test');
-        $manager->persist($moderatorUser);
+        $moderatorUser = $this->getOrCreateTestUser('moderator-test');
 
         // 1. 个人认证 - 已通过（身份证二要素）
         $personalApproved = new RealNameAuthentication();
@@ -261,13 +265,22 @@ class RealNameAuthenticationFixtures extends Fixture implements DependentFixture
     }
 
     /**
-     * 创建用于测试的轻量用户对象
+     * 获取或创建用于测试的用户
      *
-     * 使用本地 FixtureUser 而非具体的用户实现，避免跨 Bundle 依赖
+     * 使用 UserManagerInterface 创建真实用户，避免跨 Bundle 依赖
      */
-    private function createFixtureUser(string $userIdentifier): UserInterface
+    private function getOrCreateTestUser(string $userIdentifier): UserInterface
     {
-        return new FixtureUser($userIdentifier);
+        // 尝试加载已存在的用户
+        $user = $this->userManager->loadUserByIdentifier($userIdentifier);
+
+        // 如果用户不存在，创建一个新的测试用户
+        if (null === $user) {
+            $user = $this->userManager->createUser($userIdentifier, '测试用户-' . $userIdentifier);
+            $this->userManager->saveUser($user);
+        }
+
+        return $user;
     }
 
     /**

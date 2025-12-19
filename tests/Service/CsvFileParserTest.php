@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tourze\RealNameAuthenticationBundle\Tests\Service;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractIntegrationTestCase;
 use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataException;
 use Tourze\RealNameAuthenticationBundle\Service\CsvFileParser;
 
@@ -14,13 +15,14 @@ use Tourze\RealNameAuthenticationBundle\Service\CsvFileParser;
  * @internal
  */
 #[CoversClass(CsvFileParser::class)]
-final class CsvFileParserTest extends TestCase
+#[RunTestsInSeparateProcesses]
+final class CsvFileParserTest extends AbstractIntegrationTestCase
 {
     private CsvFileParser $parser;
 
-    protected function setUp(): void
+    protected function onSetUp(): void
     {
-        $this->parser = new CsvFileParser();
+        $this->parser = self::getService(CsvFileParser::class);
     }
 
     public function testParseValidCsvFile(): void

@@ -7,7 +7,7 @@ namespace Tourze\RealNameAuthenticationBundle\Exception;
  *
  * 当调用了不支持的操作或方法时抛出此异常
  */
-class UnsupportedOperationException extends \RuntimeException
+final class UnsupportedOperationException extends \RuntimeException
 {
     public function __construct(string $message = '不支持的操作', int $code = 0, ?\Throwable $previous = null)
     {

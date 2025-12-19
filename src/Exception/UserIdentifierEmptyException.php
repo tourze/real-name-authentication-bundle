@@ -7,7 +7,7 @@ namespace Tourze\RealNameAuthenticationBundle\Exception;
 /**
  * 用户标识符为空异常
  */
-class UserIdentifierEmptyException extends \RuntimeException
+final class UserIdentifierEmptyException extends \RuntimeException
 {
     public function __construct(string $message = 'User identifier cannot be empty', int $code = 0, ?\Throwable $previous = null)
     {

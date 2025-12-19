@@ -19,7 +19,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationType;
  */
 #[Autoconfigure(public: true)]
 #[AsRepository(entityClass: RealNameAuthentication::class)]
-class RealNameAuthenticationRepository extends ServiceEntityRepository
+final class RealNameAuthenticationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -55,7 +55,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
     {
         $result = $this->createQueryBuilder('r')
             ->join('r.user', 'u')
-            ->andWhere('u.username = :userIdentifier')
+            ->andWhere('u.userIdentifier = :userIdentifier')
             ->setParameter('userIdentifier', $userIdentifier)
             ->orderBy('r.createTime', 'DESC')
             ->getQuery()
@@ -225,7 +225,7 @@ class RealNameAuthenticationRepository extends ServiceEntityRepository
 
         if (isset($criteria['userIdentifier'])) {
             $qb->join('r.user', 'u')
-                ->andWhere('u.username = :userIdentifier')
+                ->andWhere('u.userIdentifier = :userIdentifier')
                 ->setParameter('userIdentifier', $criteria['userIdentifier'])
             ;
         }

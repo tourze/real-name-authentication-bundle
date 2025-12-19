@@ -31,7 +31,7 @@ use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
  */
 #[Autoconfigure(public: true)]
 #[WithMonologChannel(channel: 'real_name_authentication')]
-class BatchImportService
+final class BatchImportService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

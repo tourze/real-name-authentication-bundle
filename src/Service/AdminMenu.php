@@ -16,7 +16,7 @@ use Tourze\RealNameAuthenticationBundle\Entity\RealNameAuthentication;
  * 实名认证菜单服务
  */
 #[Autoconfigure(public: true)]
-readonly class AdminMenu implements MenuProviderInterface
+final readonly class AdminMenu implements MenuProviderInterface
 {
     public function __construct(
         private LinkGeneratorInterface $linkGenerator,

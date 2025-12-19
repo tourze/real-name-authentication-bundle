@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tourze\RealNameAuthenticationBundle\Tests\VO;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;

@@ -385,18 +385,10 @@ final class RealNameAuthenticationRepositoryTest extends AbstractRepositoryTestC
         return $entity;
     }
 
-    /**
-     * 使用反射设置实体的创建时间（仅供测试使用）
-     *
-     * @phpstan-ignore-next-line 此处使用反射是为了测试日期范围查询功能，实体设计上不允许修改createTime
-     */
+    
     private function setEntityCreateTime(RealNameAuthentication $entity, \DateTimeImmutable $createTime): void
     {
-        /** @phpstan-ignore-next-line 反射用于测试日期范围查询，实体不提供createTime setter */
-        $reflection = new \ReflectionClass($entity);
-        $property = $reflection->getProperty('createTime');
-        $property->setAccessible(true);
-        $property->setValue($entity, $createTime);
+        $entity->setCreateTime($createTime);
     }
 
     /**

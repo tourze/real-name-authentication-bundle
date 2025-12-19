@@ -11,7 +11,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  *
  * 负责根据数据字段自动检测认证方式
  */
-class AuthenticationMethodDetector
+final class AuthenticationMethodDetector
 {
     /**
      * 确定认证方式

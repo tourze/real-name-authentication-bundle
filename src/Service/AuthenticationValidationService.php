@@ -13,7 +13,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  * 负责验证各种认证数据的格式和合法性
  */
 #[Autoconfigure(public: true)]
-class AuthenticationValidationService
+final class AuthenticationValidationService
 {
     private const RATE_LIMIT_PREFIX = 'auth_rate_limit_';
     private const RATE_LIMIT_WINDOW = 3600; // 1小时

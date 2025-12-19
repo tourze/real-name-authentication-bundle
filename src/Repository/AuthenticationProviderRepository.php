@@ -17,7 +17,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\ProviderType;
  */
 #[Autoconfigure(public: true)]
 #[AsRepository(entityClass: AuthenticationProvider::class)]
-class AuthenticationProviderRepository extends ServiceEntityRepository
+final class AuthenticationProviderRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

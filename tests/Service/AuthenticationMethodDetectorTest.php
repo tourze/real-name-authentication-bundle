@@ -6,7 +6,8 @@ namespace Tourze\RealNameAuthenticationBundle\Tests\Service;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractIntegrationTestCase;
 use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
 use Tourze\RealNameAuthenticationBundle\Service\AuthenticationMethodDetector;
 
@@ -14,13 +15,14 @@ use Tourze\RealNameAuthenticationBundle\Service\AuthenticationMethodDetector;
  * @internal
  */
 #[CoversClass(AuthenticationMethodDetector::class)]
-final class AuthenticationMethodDetectorTest extends TestCase
+#[RunTestsInSeparateProcesses]
+final class AuthenticationMethodDetectorTest extends AbstractIntegrationTestCase
 {
     private AuthenticationMethodDetector $detector;
 
-    protected function setUp(): void
+    protected function onSetUp(): void
     {
-        $this->detector = new AuthenticationMethodDetector();
+        $this->detector = self::getService(AuthenticationMethodDetector::class);
     }
 
     public function testDetectWithExplicitMethod(): void

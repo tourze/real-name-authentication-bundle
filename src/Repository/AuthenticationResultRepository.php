@@ -19,7 +19,7 @@ use Tourze\RealNameAuthenticationBundle\Enum\AuthenticationMethod;
  */
 #[Autoconfigure(public: true)]
 #[AsRepository(entityClass: AuthenticationResult::class)]
-class AuthenticationResultRepository extends ServiceEntityRepository
+final class AuthenticationResultRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

@@ -21,7 +21,7 @@ use Tourze\RealNameAuthenticationBundle\Repository\AuthenticationProviderReposit
  */
 #[Autoconfigure(public: true)]
 #[WithMonologChannel(channel: 'real_name_authentication')]
-class AuthenticationProviderService
+final class AuthenticationProviderService
 {
     public function __construct(
         private readonly AuthenticationProviderRepository $providerRepository,

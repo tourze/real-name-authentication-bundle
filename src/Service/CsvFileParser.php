@@ -13,7 +13,7 @@ use Tourze\RealNameAuthenticationBundle\Exception\InvalidAuthenticationDataExcep
  *
  * 负责解析CSV文件并标准化数据
  */
-class CsvFileParser
+final class CsvFileParser
 {
     /**
      * 解析CSV文件
@@ -102,9 +102,7 @@ class CsvFileParser
             return null; // 跳过格式错误的行
         }
 
-        // array_combine可能返回 false,尽管 PHPDoc 显示为 non-empty-array
         $combinedRow = array_combine($headers, $row);
-        // @phpstan-ignore-next-line
         if (false === $combinedRow) {
             return null; // 跳过无法组合的行
         }

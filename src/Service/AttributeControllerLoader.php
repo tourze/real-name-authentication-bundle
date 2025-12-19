@@ -28,11 +28,14 @@ use Tourze\RoutingAutoLoaderBundle\Service\RoutingAutoLoaderInterface;
  * 加载所有控制器的路由配置
  */
 #[AutoconfigureTag(name: 'routing.loader')]
-class AttributeControllerLoader extends Loader implements RoutingAutoLoaderInterface
+final class AttributeControllerLoader extends Loader implements RoutingAutoLoaderInterface
 {
-    public function __construct(private AttributeRouteControllerLoader $controllerLoader)
+    private AttributeRouteControllerLoader $controllerLoader;
+
+    public function __construct()
     {
         parent::__construct();
+        $this->controllerLoader = new AttributeRouteControllerLoader();
     }
 
     public function autoload(): RouteCollection

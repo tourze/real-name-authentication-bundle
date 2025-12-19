@@ -27,7 +27,7 @@ use Tourze\RealNameAuthenticationBundle\VO\PersonalAuthDTO;
  */
 #[Autoconfigure(public: true)]
 #[WithMonologChannel(channel: 'real_name_authentication')]
-class PersonalAuthenticationService
+final class PersonalAuthenticationService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

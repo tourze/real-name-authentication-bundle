@@ -5,12 +5,10 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
     public: false
 
-  # Alias the routing loader attribute service
-  Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader: '@routing.loader.attribute'
-
   Tourze\RealNameAuthenticationBundle\Controller\:
     resource: '../../Controller/'
   Tourze\RealNameAuthenticationBundle\Repository\:
     resource: '../../Repository/'
   Tourze\RealNameAuthenticationBundle\Service\:
     resource: '../../Service/'
+    public: true

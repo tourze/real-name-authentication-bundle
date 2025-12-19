@@ -7,7 +7,7 @@ use Tourze\SymfonyDependencyServiceLoader\AutoExtension;
 /**
  * 实名认证Bundle扩展配置
  */
-class RealNameAuthenticationExtension extends AutoExtension
+final class RealNameAuthenticationExtension extends AutoExtension
 {
     protected function getConfigDir(): string
     {

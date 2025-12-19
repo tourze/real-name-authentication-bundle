@@ -7,7 +7,7 @@ namespace Tourze\RealNameAuthenticationBundle\Exception;
 /**
  * 批量导入相关异常
  */
-class BatchImportException extends \RuntimeException
+final class BatchImportException extends \RuntimeException
 {
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
     {
